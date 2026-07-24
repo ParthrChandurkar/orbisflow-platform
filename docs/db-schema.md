@@ -269,6 +269,8 @@ rejected            -> employee_review
 finance_review      -> processed
 ```
 
+Note: the transition `rejected -> employee_review` (Employee resubmission) must, within the same transaction as the status update, reset `manager_decision`, `manager_decided_by_user_id`, `manager_decided_at`, and `rejection_reason` to NULL on the requests row. This is required by the Section 3.2 CHECK constraint, which permits manager-decision fields only when status is `rejected` or in the approved-path states. Historical rejection context is not lost — it remains in `audit_log` as an immutable event, independent of the current row's cleared fields.
+
 An extraction failure leaves the Request in `uploaded_extracting` and sets `extracted_invoice_data.extraction_status = 'failed'`; retry reuses that Request. No other transition is legal. (AI-07, WF-01, WF-02, WF-05, WF-06; Architecture §2)
 
 Every transition uses the caller's previously read version:
