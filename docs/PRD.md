@@ -175,7 +175,6 @@ The MVP is considered done when:
 - At least 95% of supported invoice uploads reach either Employee review or a visible recoverable error without manual database intervention.
 - No critical or high-severity authorization defect remains open at release.
 - Every tested material action produces the expected immutable audit event and dashboard status.
-- A complete end-to-end acceptance test demonstrates upload, extraction, correction when needed, Manager approval or rejection, Finance processing, notifications, and audit history.
 - A clean environment can be started from documented Docker instructions, and the main branch passes the GitHub Actions build and test workflow.
 - A documented end-to-end acceptance test performed by the developer across all three roles (Employee, Manager, Finance), covering upload, extraction, correction, approval, rejection, and processing, recorded as evidence of MVP completion.
 
