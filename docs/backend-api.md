@@ -58,6 +58,14 @@ Shared response shapes:
 - **Errors:** `400 INVALID_REQUEST` for malformed/missing fields; `401 INVALID_CREDENTIALS` for any credential failure, without identifying which value failed.
 - **Trace:** AUTH-01, AUTH-04, AUTH-05; US-01, US-02.
 
+#### `POST /api/v1/auth/logout`
+
+- **Auth:** Any valid Employee, Manager, or Finance JWT; CSRF required (state-changing).
+- **Request:** No body.
+- **Success:** `200 OK` with empty body; response clears the `ORBIS_SESSION` cookie (Set-Cookie with Max-Age=0 / expired) and the `XSRF-TOKEN` cookie the same way. No server-side session store exists to invalidate, so a JWT already copied out of the cookie remains technically valid until its natural expiry — this is a known MVP tradeoff, acceptable since HttpOnly prevents JS-based exfiltration in the first place.
+- **Errors:** `401 AUTH_REQUIRED`; `403 CSRF_INVALID`.
+- **Trace:** AUTH-01, AUTH-04.
+
 There is no refresh-token endpoint. Expiry requires sign-in again; this avoids adding an unspecified token lifecycle.
 
 #### `GET /api/v1/users/me`
@@ -415,7 +423,7 @@ Notifications remain persisted indefinitely for the MVP unless a later retention
 
 | Coverage | Endpoint or rule |
 |---|---|
-| US-01–US-02 | Login, current user, JWT/CSRF/security pipeline |
+| US-01–US-02 | Login, logout, current user, JWT/CSRF/security pipeline |
 | US-03–US-04 | Create Request, replacement Document, access link/content |
 | US-05–US-08 | Internal extraction, extracted-data read, validation, retry |
 | US-09–US-10 | Correction, resubmission, fixed routing/state rules |
