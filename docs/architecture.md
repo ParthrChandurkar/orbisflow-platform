@@ -47,6 +47,10 @@ This pattern isolates slow OCR from the user request without adding prohibited i
 3. On every protected call, Spring validates signature, expiry, subject, and role before applying RBAC ownership, assignment, and workflow-state checks. Invalid or expired tokens return the consistent unauthorized behavior; frontend control visibility is never enforcement. (AUTH-02, AUTH-03, AUTH-04; RBAC §3)
 4. FastAPI does not accept or validate end-user JWTs. It trusts Spring as the sole caller because FastAPI is not browser-addressable and is restricted to the internal service network. Spring remains responsible for user authorization; FastAPI validates only the extraction input shape and limits. This avoids duplicating RBAC in an OCR-only service. (AUTH-02, AUTH-03, AI-01, AI-03; PRD §7 Security)
 
+### CSRF Protection
+
+`SameSite=Strict` remains defense in depth but is not the sole CSRF control. Spring shall require a double-submit CSRF token for state-changing correction/resubmission, approval, rejection, and processing requests: a readable CSRF cookie value must match a request-header value. Safe read requests are exempt, while a missing or mismatched token is rejected before business authorization. Integration tests shall verify that cross-site, missing-token, and mismatched-token attempts cannot mutate state, alongside the required cross-role and cross-owner authorization tests. (AUTH-03; PRD §7 Security)
+
 OAuth and additional role models are outside this boundary.
 
 ## 4. File Flow
