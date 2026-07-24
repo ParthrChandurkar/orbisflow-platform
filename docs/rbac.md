@@ -68,6 +68,7 @@ Every case below must return an unauthorized/forbidden/conflict response as appl
 | Finance approves or rejects the Manager-stage decision | Role + action check | WF-03, WF-06 |
 | Finance edits extracted invoice fields | Role + action check | AI-06 |
 | A user guesses an ID to read a Request/Document outside permitted scope, or another user's Notification | Ownership/assignment/state check on every direct lookup | DOC-06, NOTIF-04, AUTH-03 |
+| A user reads another user's User record (e.g., via a guessed or enumerated user ID) | JWT subject must equal requested user ID, per the READ User enforcement rule | AUTH-02, AUTH-03 |
 | Manager reads Request detail not routed to them | `request.manager_id` assignment check | WF-03 |
 | Manager approves/rejects an assigned Request outside `manager_review` or decides twice | State + stale-transition check | WF-03, WF-07 |
 | Finance reads a Request before Manager approval | State check | WF-05, WF-06, DASH-03 |
