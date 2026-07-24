@@ -91,8 +91,8 @@ Users may access only the data and actions allowed by their assigned role. A use
 ### Document Upload
 
 - **DOC-01:** An Employee shall be able to create a request by uploading one supported invoice file through a clear drag-and-drop or file-picker interface.
-- **DOC-02:** The frontend shall show permitted file types and maximum size before upload. The backend shall independently enforce both constraints.
-- **DOC-03:** The system shall reject empty, corrupt, unsupported, or oversized files with actionable errors and without creating a routable request.
+- **DOC-02:** Only PDF, JPG, and PNG invoices up to 10 MB shall be accepted. The frontend and backend shall both enforce these format and size constraints.
+- **DOC-03:** Empty, corrupt, unsupported, or oversized files shall be rejected with actionable errors and no routable request.
 - **DOC-04:** Accepted documents shall be stored in a private S3 bucket under non-guessable object keys; PostgreSQL shall store ownership, file metadata, timestamps, and workflow state.
 - **DOC-05:** Upload progress, successful receipt, and retryable failure states shall be visible to the Employee.
 - **DOC-06:** An Employee shall be able to view or download the document attached to their own request through authorized, time-limited access.
@@ -103,18 +103,18 @@ Users may access only the data and actions allowed by their assigned role. A use
 - **AI-02:** Each line item shall support, at minimum, a description and amount when present in the source document.
 - **AI-03:** The extraction response shall use a versioned structured schema and return field-level values, extraction status, and validation flags to Spring Boot.
 - **AI-04:** The system shall preserve the original document and extracted output so the Employee, Manager, and Finance can compare them within their authorized views.
-- **AI-05:** Required-field validation shall classify the submission as valid and complete or incomplete/flagged. Only valid and complete requests may route to a Manager.
+- **AI-05:** An invoice shall be incomplete/flagged if vendor, total amount, or invoice date is missing, or if present line items do not sum to the extracted total. Without line items, only required fields are checked. All others are valid and complete.
 - **AI-06:** The Employee shall be shown extracted fields before routing and may correct extracted values permitted by the request form. Corrections shall be audited.
 - **AI-07:** If extraction times out or fails, the request shall remain recoverable, show a non-technical failure message, and allow the Employee to retry rather than silently route.
 
 ### Approval Workflow
 
 - **WF-01:** The backend shall enforce the fixed states and transitions: uploaded/extracting, employee review, manager review, rejected, finance review, and processed.
-- **WF-02:** Rule-based routing shall send valid and complete requests to the assigned Manager queue and return incomplete or flagged requests to the Employee.
+- **WF-02:** Each Employee user record shall have a `manager_id` foreign key to the users table, set manually through seed data or an administrative database insert. No assignment UI shall exist. Valid and complete requests shall route to that Manager; incomplete/flagged requests shall return to the Employee.
 - **WF-03:** A Manager shall see only actionable requests routed to them and shall be able to approve or reject each request once while it is in Manager review.
 - **WF-04:** Rejection shall require a reason visible to the Employee. Rejected requests shall not enter the Finance queue.
 - **WF-05:** Manager approval shall atomically record the decision and move the request to Finance review.
-- **WF-06:** Finance shall be able to mark only Manager-approved requests as processed.
+- **WF-06:** Finance may process only Manager-approved requests. Processing shall require a timestamp, Finance actor identity, and `payment_status` from `{paid, scheduled}`. Partial payments and multiple installments are unsupported.
 - **WF-07:** The backend shall reject stale, duplicate, unauthorized, and out-of-order transitions with a clear conflict or forbidden response.
 - **WF-08:** Each request detail page shall show its current status, current owner role, extracted data, source document, and chronological history as permitted by role.
 
@@ -177,18 +177,19 @@ The MVP is considered done when:
 - Every tested material action produces the expected immutable audit event and dashboard status.
 - A complete end-to-end acceptance test demonstrates upload, extraction, correction when needed, Manager approval or rejection, Finance processing, notifications, and audit history.
 - A clean environment can be started from documented Docker instructions, and the main branch passes the GitHub Actions build and test workflow.
-- Five representative users across the three roles can complete their primary task without facilitator intervention, with at least four rating the workflow clear and usable.
+- A documented end-to-end acceptance test performed by the developer across all three roles (Employee, Manager, Finance), covering upload, extraction, correction, approval, rejection, and processing, recorded as evidence of MVP completion.
 
-## 9. Explicit Open Questions / Deferred Features
+## 9. Resolved Decisions / Deferred Features
 
-The following decisions must be resolved during implementation without broadening MVP scope:
+MVP decisions are resolved:
 
-1. Which invoice file formats and maximum file size will be supported at launch?
-2. How is an Employee mapped to exactly one Manager for routing, and what seed data will establish that relationship?
-3. Which validation conditions classify an invoice as “flagged” beyond missing required fields?
-4. Which extracted fields may an Employee correct, and must corrected totals equal the sum of line items?
-5. What representative invoice set will be used to measure extraction accuracy, including the treatment of unreadable documents?
-6. What retention period applies to invoice files, request records, audit events, and in-app notifications?
-7. Does “processed” require only a timestamp and Finance actor, or also a payment-status value selected from a fixed set?
+1. **File formats and size — Resolved:** PDF, JPG, and PNG only; 10 MB maximum; all others rejected by frontend and backend.
+2. **Employee-to-Manager mapping — Resolved:** `manager_id` is a users-table foreign key set by seed data or administrative insert. WF-02 routes to that Manager. No assignment UI is included.
+3. **Incomplete/flagged criteria — Resolved:** Vendor, total amount, or invoice date is missing; or present line items do not sum to the extracted total. Without line items, only required fields apply.
+4. **Processed definition — Resolved:** Timestamp, Finance actor identity, and `payment_status` of `paid` or `scheduled` are required. Partial payments and multiple installments are unsupported.
+
+### Deferred Post-MVP
+
+Invoice files, request records, and audit events are retained indefinitely for the MVP with no automated deletion policy. Retention policy is deferred post-MVP.
 
 RAG, executive chat, natural-language search, configurable workflows, real-time notifications, additional roles, and OAuth remain deferred and are not part of this PRD.
