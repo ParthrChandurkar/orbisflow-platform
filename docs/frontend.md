@@ -105,6 +105,9 @@ The frontend uses **Client Components plus native `fetch`** for authenticated AP
 2. A shared browser API client uses `cache: no-store`, reads `XSRF-TOKEN` for mutations, attaches `X-XSRF-TOKEN`, and includes `expected_version` where required. It parses the common success/error contracts in one place.
 3. Dashboard filter/page/sort values live in URL search parameters. Changing them updates the URL and triggers the page component to refetch, preserving shareable/back-button behavior.
 4. After mutation success, the owning page refetches its Request/list/audit data from Spring. `409 VERSION_CONFLICT` performs that refetch before inviting the user to retry; `404` uses the scoped not-found state.
+
+A 401 AUTH_REQUIRED response from any API call, at any point after initial route-guard validation (e.g. JWT naturally expiring mid-session during an 8-hour window), is handled globally by the shared browser API client rather than per-page: it clears local user-identity state and redirects to /login, optionally preserving the current path so the user returns to it after re-authenticating. This is distinct from the initial AuthGuard check, which only runs on route mount. Reference: AUTH-04.
+
 5. `ExtractionStatusPoller` uses the same client against Spring every three seconds while status is `pending`; it pauses in a hidden tab and stops on `succeeded` or `failed`. No WebSocket or FastAPI call is used. (AI-07; Architecture §§1, 2; Backend API §§2–6)
 
 API response/error types mirror `backend-api.md` in a single frontend contracts module. The common error envelope drives field errors, page errors, and correlation-ID display; pages never infer permission from hidden controls alone.
