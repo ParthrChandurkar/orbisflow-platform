@@ -1,0 +1,1 @@
+"""Extraction response mapping placeholder."""
