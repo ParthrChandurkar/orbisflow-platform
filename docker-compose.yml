@@ -1,0 +1,82 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    env_file:
+      - path: ./frontend/.env
+        required: false
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      backend:
+        condition: service_started
+
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-orbisflow}
+      DB_USERNAME: ${POSTGRES_USER:-orbisflow}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-orbisflow_local}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      AI_SERVICE_BASE_URL: http://ai-service:8000
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ai-service:
+        condition: service_started
+
+  ai-service:
+    build:
+      context: ./ai-service
+    env_file:
+      - path: ./ai-service/.env
+        required: false
+    environment:
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+    ports:
+      - "${AI_SERVICE_PORT:-8000}:8000"
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-orbisflow}
+      POSTGRES_USER: ${POSTGRES_USER:-orbisflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-orbisflow_local}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data:
+  redis_data:

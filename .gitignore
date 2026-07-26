@@ -1,0 +1,36 @@
+# Environment and secrets
+.env
+**/.env
+!.env.example
+!**/.env.example
+
+# Node / Next.js
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# Java / Maven
+target/
+**/target/
+*.class
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
