@@ -1,15 +1,34 @@
 spring:
   application:
     name: orbisflow-backend
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/orbisflow}
-    username: ${DB_USERNAME:orbisflow}
-    password: ${DB_PASSWORD:orbisflow_local}
+    username: ${DB_APP_USERNAME:orbisflow_app}
+    password: ${DB_APP_PASSWORD:orbisflow_app_local}
+  flyway:
+    enabled: true
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/orbisflow}
+    user: ${DB_MIGRATION_USERNAME:orbisflow}
+    password: ${DB_MIGRATION_PASSWORD:orbisflow_local}
+    placeholders:
+      applicationDatabasePassword: ${DB_APP_PASSWORD:orbisflow_app_local}
+    validate-on-migrate: true
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
 
 server:
   port: ${SERVER_PORT:8080}
 
 orbisflow:
+  auth:
+    jwt-secret: ${JWT_SECRET:b3JiaXNmbG93LWxvY2FsLWp3dC1zZWNyZXQtbXVzdC1iZS0zMi1ieXRlcw==}
+    csrf-secret: ${CSRF_SECRET:b3JiaXNmbG93LWxvY2FsLWNzcmYtc2VjcmV0LW11c3QtYmUtMzItYnl0ZXM=}
+    jwt-ttl: PT8H
+    secure-cookies: ${SECURE_COOKIES:true}
+    allowed-origin: ${ALLOWED_ORIGIN:http://localhost:3000}
   redis:
     host: ${REDIS_HOST:localhost}
     port: ${REDIS_PORT:6379}

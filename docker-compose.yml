@@ -22,8 +22,13 @@ services:
     environment:
       SERVER_PORT: 8080
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-orbisflow}
-      DB_USERNAME: ${POSTGRES_USER:-orbisflow}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-orbisflow_local}
+      DB_MIGRATION_USERNAME: ${POSTGRES_USER:-orbisflow}
+      DB_MIGRATION_PASSWORD: ${POSTGRES_PASSWORD:-orbisflow_local}
+      DB_APP_USERNAME: ${DB_APP_USERNAME:-orbisflow_app}
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD:-orbisflow_app_local}
+      JWT_SECRET: ${JWT_SECRET:-b3JiaXNmbG93LWxvY2FsLWp3dC1zZWNyZXQtbXVzdC1iZS0zMi1ieXRlcw==}
+      CSRF_SECRET: ${CSRF_SECRET:-b3JiaXNmbG93LWxvY2FsLWNzcmYtc2VjcmV0LW11c3QtYmUtMzItYnl0ZXM=}
+      SECURE_COOKIES: ${SECURE_COOKIES:-true}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       AI_SERVICE_BASE_URL: http://ai-service:8000

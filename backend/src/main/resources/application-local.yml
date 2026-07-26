@@ -2,6 +2,14 @@ spring:
   config:
     activate:
       on-profile: local
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/orbisflow}
+    username: ${DB_APP_USERNAME:orbisflow_app}
+    password: ${DB_APP_PASSWORD:orbisflow_app_local}
+  flyway:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/orbisflow}
+    user: ${DB_MIGRATION_USERNAME:orbisflow}
+    password: ${DB_MIGRATION_PASSWORD:orbisflow_local}
 
 logging:
   level:
