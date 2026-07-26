@@ -2,6 +2,10 @@
 
 Orbis Flow is a three-service, AI-assisted invoice workflow MVP. A Next.js frontend supports Employee, Manager, and Finance experiences; Spring Boot owns authentication, business rules, persistence, documents, and workflow state; and an internal FastAPI service is reserved for invoice OCR and structured extraction.
 
+## Known Issues
+
+Next.js 16.2.11's bundled postcss/sharp versions carry 3 high-severity advisories with no non-breaking fix available as of 2026-07-26; monitored for upstream patch, not blocking MVP.
+
 ## Prerequisites
 
 - Docker Desktop with Docker Compose
