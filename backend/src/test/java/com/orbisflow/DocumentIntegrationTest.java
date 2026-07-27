@@ -23,6 +23,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -348,6 +349,63 @@ class DocumentIntegrationTest {
         assertThat(total).isEqualTo(2);
         assertThat(current).isEqualTo(1);
         assertThat(oldCurrent).isFalse();
+    }
+
+    @Test
+    void replacementUploadRequiresCsrfToken() throws Exception {
+        UploadResult initial = upload(
+                "employee1", "original.pdf", "application/pdf", validPdf("csrf-original"));
+        jdbc.update(
+                "UPDATE requests SET status = 'employee_review' WHERE id = ?",
+                initial.requestId());
+        LoginCookies cookies = login("employee1");
+        MockMultipartFile replacement = new MockMultipartFile(
+                "file", "replacement.pdf", "application/pdf",
+                validPdf("csrf-replacement"));
+
+        mvc.perform(multipart(
+                        "/api/v1/requests/{requestId}/documents", initial.requestId())
+                        .file(replacement)
+                        .param("expected_version", "0")
+                        .cookie(cookies.session(), cookies.csrf()))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code", is("CSRF_INVALID")));
+
+        mvc.perform(multipart(
+                        "/api/v1/requests/{requestId}/documents", initial.requestId())
+                        .file(replacement)
+                        .param("expected_version", "0")
+                        .cookie(cookies.session(), cookies.csrf())
+                        .header("X-XSRF-TOKEN", "mismatched-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code", is("CSRF_INVALID")));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "manager1, 403, ACCESS_DENIED",
+        "finance1, 403, ACCESS_DENIED",
+        "employee2, 404, RESOURCE_NOT_FOUND"
+    })
+    void nonOwnerCannotReplaceDocument(
+            String login, int expectedStatus, String expectedErrorCode) throws Exception {
+        UploadResult initial = upload(
+                "employee1", "original.pdf", "application/pdf", validPdf("owner-original"));
+        jdbc.update(
+                "UPDATE requests SET status = 'employee_review' WHERE id = ?",
+                initial.requestId());
+        LoginCookies nonOwner = login(login);
+
+        mvc.perform(multipart(
+                        "/api/v1/requests/{requestId}/documents", initial.requestId())
+                        .file(new MockMultipartFile(
+                                "file", "replacement.pdf", "application/pdf",
+                                validPdf("non-owner-replacement")))
+                        .param("expected_version", "0")
+                        .cookie(nonOwner.session(), nonOwner.csrf())
+                        .header("X-XSRF-TOKEN", nonOwner.csrf().getValue()))
+                .andExpect(status().is(expectedStatus))
+                .andExpect(jsonPath("$.error.code", is(expectedErrorCode)));
     }
 
     @Test
