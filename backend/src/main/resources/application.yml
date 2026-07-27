@@ -18,6 +18,10 @@ spring:
   jackson:
     deserialization:
       fail-on-unknown-properties: true
+  servlet:
+    multipart:
+      max-file-size: 11MB
+      max-request-size: 12MB
 
 server:
   port: ${SERVER_PORT:8080}
@@ -34,3 +38,13 @@ orbisflow:
     port: ${REDIS_PORT:6379}
   ai-service:
     base-url: ${AI_SERVICE_BASE_URL:http://localhost:8000}
+  storage:
+    s3:
+      bucket: ${S3_BUCKET:orbisflow-invoices}
+      region: ${AWS_REGION:us-east-1}
+      endpoint: ${S3_ENDPOINT:}
+      access-key: ${AWS_ACCESS_KEY_ID:}
+      secret-key: ${AWS_SECRET_ACCESS_KEY:}
+      path-style: ${S3_PATH_STYLE:false}
+      signed-link-secret: ${SIGNED_LINK_SECRET:b3JiaXNmbG93LWxvY2FsLXNpZ25lZC1saW5rLXNlY3JldC0zMi1ieXRlcw==}
+      signed-link-ttl: PT60S

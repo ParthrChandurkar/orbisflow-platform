@@ -16,6 +16,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import java.util.Base64;
 import java.util.List;
+import java.time.Duration;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -45,7 +46,8 @@ class AuthIntegrationTest {
             new PostgreSQLContainer<>("postgres:17-alpine")
                     .withDatabaseName("orbisflow_test")
                     .withUsername("postgres")
-                    .withPassword("postgres");
+                    .withPassword("postgres")
+                    .withStartupTimeout(Duration.ofMinutes(2));
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {

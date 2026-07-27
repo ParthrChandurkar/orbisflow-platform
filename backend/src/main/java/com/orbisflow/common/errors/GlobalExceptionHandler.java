@@ -6,11 +6,14 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
@@ -31,7 +34,11 @@ public class GlobalExceptionHandler {
                 "The request contains invalid fields.", fields, request);
     }
 
-    @ExceptionHandler({HttpMessageNotReadableException.class, ConstraintViolationException.class})
+    @ExceptionHandler({
+            HttpMessageNotReadableException.class,
+            ConstraintViolationException.class,
+            MissingServletRequestParameterException.class
+    })
     ResponseEntity<ApiErrorEnvelope> malformed(Exception exception, HttpServletRequest request) {
         return response(
                 HttpStatus.BAD_REQUEST, ApiErrorCode.INVALID_REQUEST,
@@ -52,6 +59,22 @@ public class GlobalExceptionHandler {
         return response(
                 HttpStatus.METHOD_NOT_ALLOWED, ApiErrorCode.METHOD_NOT_ALLOWED,
                 "The HTTP method is not supported for this resource.", List.of(), request);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    ResponseEntity<ApiErrorEnvelope> uploadTooLarge(
+            MaxUploadSizeExceededException exception, HttpServletRequest request) {
+        return response(
+                HttpStatus.PAYLOAD_TOO_LARGE, ApiErrorCode.FILE_TOO_LARGE,
+                "The uploaded file exceeds the 10 MB limit.", List.of(), request);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    ResponseEntity<ApiErrorEnvelope> accessDenied(
+            AccessDeniedException exception, HttpServletRequest request) {
+        return response(
+                HttpStatus.FORBIDDEN, ApiErrorCode.ACCESS_DENIED,
+                "This action is not permitted.", List.of(), request);
     }
 
     @ExceptionHandler(Exception.class)
