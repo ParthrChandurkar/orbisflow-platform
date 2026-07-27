@@ -209,10 +209,42 @@ class AuthIntegrationTest {
                 "SELECT has_table_privilege('orbisflow_app', 'audit_log', 'DELETE')",
                 Boolean.class);
         assertThat(tableCount).isEqualTo(7);
-        assertThat(flyway.info().applied().length).isEqualTo(3);
+        assertThat(flyway.info().applied().length).isEqualTo(4);
         assertThat(canInsert).isTrue();
         assertThat(canUpdate).isFalse();
         assertThat(canDelete).isFalse();
+    }
+
+    @Test
+    void applicationRoleCannotDeleteProductTables() {
+        Boolean deleteDenied = jdbc.queryForObject("""
+                SELECT bool_and(
+                    NOT has_table_privilege('orbisflow_app', table_name, 'DELETE')
+                )
+                FROM unnest(ARRAY[
+                    'users', 'requests', 'documents', 'extracted_invoice_data',
+                    'invoice_line_items', 'notifications'
+                ]) AS product_tables(table_name)
+                """, Boolean.class);
+
+        assertThat(deleteDenied).isTrue();
+    }
+
+    @Test
+    void applicationRoleRetainsRequiredProductTablePrivileges() {
+        Boolean requiredPrivilegesGranted = jdbc.queryForObject("""
+                SELECT bool_and(
+                    has_table_privilege('orbisflow_app', table_name, 'SELECT')
+                    AND has_table_privilege('orbisflow_app', table_name, 'INSERT')
+                    AND has_table_privilege('orbisflow_app', table_name, 'UPDATE')
+                )
+                FROM unnest(ARRAY[
+                    'users', 'requests', 'documents', 'extracted_invoice_data',
+                    'invoice_line_items', 'notifications'
+                ]) AS product_tables(table_name)
+                """, Boolean.class);
+
+        assertThat(requiredPrivilegesGranted).isTrue();
     }
 
     private MvcResult login(String login, String password) throws Exception {
