@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.GenericContainer;
@@ -242,6 +244,81 @@ class ExtractionIntegrationTest {
     }
 
     @Test
+    void nonOwnerCannotPatchExtractedData() throws Exception {
+        UploadResult uploaded = uploadFlaggedInvoice("Patch Authorization Vendor");
+
+        assertMutationDeniedForWrongRolesAndNonOwner(
+                () -> patch("/api/v1/requests/{id}/extracted-data", uploaded.requestId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"expected_version":1,"total_amount":"75.00"}
+                                """));
+    }
+
+    @Test
+    void nonOwnerCannotResubmit() throws Exception {
+        UploadResult uploaded = uploadFlaggedInvoice("Resubmit Authorization Vendor");
+
+        assertMutationDeniedForWrongRolesAndNonOwner(
+                () -> post("/api/v1/requests/{id}/resubmit", uploaded.requestId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"expected_version":1}
+                                """));
+    }
+
+    @Test
+    void nonOwnerCannotRetryExtraction() throws Exception {
+        UploadResult uploaded = upload("employee1", blankPng());
+        await(() -> "failed".equals(extractionStatus(uploaded.requestId())));
+
+        assertMutationDeniedForWrongRolesAndNonOwner(
+                () -> post("/api/v1/requests/{id}/extraction/retry", uploaded.requestId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"expected_version":0}
+                                """));
+    }
+
+    @Test
+    void employeeCannotPatchOrResubmitRequestInManagerReview() throws Exception {
+        UploadResult uploaded = upload("employee1", invoicePng(
+                "Vendor: Routed Vendor",
+                "Invoice Date: 2026-07-28",
+                "Item: Routed Service 90.00",
+                "Total Amount: 90.00"));
+        await(() -> "manager_review".equals(requestStatus(uploaded.requestId())));
+
+        mvc.perform(patch("/api/v1/requests/{id}/extracted-data", uploaded.requestId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"expected_version":1,"total_amount":"90.00"}
+                                """)
+                        .cookie(
+                                uploaded.cookies().session(),
+                                uploaded.cookies().csrf())
+                        .header(
+                                "X-XSRF-TOKEN",
+                                uploaded.cookies().csrf().getValue()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error.code", is("STATE_CONFLICT")));
+
+        mvc.perform(post("/api/v1/requests/{id}/resubmit", uploaded.requestId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"expected_version":1}
+                                """)
+                        .cookie(
+                                uploaded.cookies().session(),
+                                uploaded.cookies().csrf())
+                        .header(
+                                "X-XSRF-TOKEN",
+                                uploaded.cookies().csrf().getValue()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error.code", is("STATE_CONFLICT")));
+    }
+
+    @Test
     void unreadableInvoiceFailsWithoutTransitionAndRetryStartsOneNewAttempt()
             throws Exception {
         UploadResult uploaded = upload("employee1", blankPng());
@@ -322,6 +399,36 @@ class ExtractionIntegrationTest {
         assertThat(occurrences(
                 FAST_API.getLogs(),
                 "extraction_attempt request_id=" + uploaded.requestId())).isEqualTo(2);
+    }
+
+    private UploadResult uploadFlaggedInvoice(String vendor) throws Exception {
+        UploadResult uploaded = upload("employee1", invoicePng(
+                "Vendor: " + vendor,
+                "Invoice Date: 2026-07-28",
+                "Item: Authorization Test 75.00",
+                "Total Amount: 100.00"));
+        await(() -> "employee_review".equals(requestStatus(uploaded.requestId())));
+        return uploaded;
+    }
+
+    private void assertMutationDeniedForWrongRolesAndNonOwner(
+            Supplier<MockHttpServletRequestBuilder> request)
+            throws Exception {
+        for (String login : new String[] {"manager1", "finance1"}) {
+            LoginCookies wrongRole = login(login);
+            mvc.perform(request.get()
+                            .cookie(wrongRole.session(), wrongRole.csrf())
+                            .header("X-XSRF-TOKEN", wrongRole.csrf().getValue()))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.error.code", is("ACCESS_DENIED")));
+        }
+
+        LoginCookies nonOwner = login("employee2");
+        mvc.perform(request.get()
+                        .cookie(nonOwner.session(), nonOwner.csrf())
+                        .header("X-XSRF-TOKEN", nonOwner.csrf().getValue()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error.code", is("RESOURCE_NOT_FOUND")));
     }
 
     private UploadResult upload(String login, byte[] content) throws Exception {
