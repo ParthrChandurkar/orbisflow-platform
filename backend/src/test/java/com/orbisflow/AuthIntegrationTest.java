@@ -28,6 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -37,6 +38,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class AuthIntegrationTest {
     private static final String JWT_SECRET =
             "b3JiaXNmbG93LWxvY2FsLWp3dC1zZWNyZXQtbXVzdC1iZS0zMi1ieXRlcw==";
@@ -210,11 +212,16 @@ class AuthIntegrationTest {
         Boolean canDelete = jdbc.queryForObject(
                 "SELECT has_table_privilege('orbisflow_app', 'audit_log', 'DELETE')",
                 Boolean.class);
+        Boolean canReplaceLineItems = jdbc.queryForObject(
+                "SELECT has_function_privilege("
+                        + "'orbisflow_app', 'clear_invoice_line_items(uuid)', 'EXECUTE')",
+                Boolean.class);
         assertThat(tableCount).isEqualTo(7);
-        assertThat(flyway.info().applied().length).isEqualTo(4);
+        assertThat(flyway.info().applied().length).isEqualTo(5);
         assertThat(canInsert).isTrue();
         assertThat(canUpdate).isFalse();
         assertThat(canDelete).isFalse();
+        assertThat(canReplaceLineItems).isTrue();
     }
 
     @Test

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,11 +36,13 @@ public class DocumentController {
     @PreAuthorize("hasRole('EMPLOYEE')")
     ResponseEntity<RequestSummary> replace(
             @AuthenticationPrincipal AuthenticatedUser principal,
+            @RequestAttribute("correlationId") String correlationId,
             @PathVariable UUID requestId,
             @RequestParam("expected_version") long expectedVersion,
             @RequestPart(value = "file", required = false) MultipartFile file) {
         return ResponseEntity.accepted().body(
-                documents.replace(principal, requestId, expectedVersion, file));
+                documents.replace(
+                        principal, requestId, expectedVersion, file, correlationId));
     }
 
     @GetMapping("/documents/{documentId}/access-link")

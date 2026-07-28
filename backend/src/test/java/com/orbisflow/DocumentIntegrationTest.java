@@ -33,6 +33,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.GenericContainer;
@@ -53,6 +54,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class DocumentIntegrationTest {
     private static final String BUCKET = "orbisflow-test-invoices";
     private static final String MINIO_ACCESS_KEY = "orbisflow-test";
@@ -142,7 +144,7 @@ class DocumentIntegrationTest {
                 HttpResponse.BodyHandlers.discarding());
 
         assertThat(persistedStatus).isEqualTo("uploaded_extracting");
-        assertThat(extractionRows).isZero();
+        assertThat(extractionRows).isEqualTo(1);
         assertThat(key).matches("documents/[0-9a-f-]{36}");
         assertThat(stored).isEqualTo(pdf);
         assertThat(anonymousRead.statusCode()).isEqualTo(403);
@@ -314,7 +316,7 @@ class DocumentIntegrationTest {
     }
 
     @Test
-    void replacementCreatesNewCurrentDocumentAndPreservesWorkflowState() throws Exception {
+    void replacementCreatesNewCurrentDocumentAndStartsExtraction() throws Exception {
         UploadResult initial = upload(
                 "employee1", "original.pdf", "application/pdf", validPdf("old"));
         jdbc.update(
@@ -331,7 +333,7 @@ class DocumentIntegrationTest {
                         .cookie(cookies.session(), cookies.csrf())
                         .header("X-XSRF-TOKEN", cookies.csrf().getValue()))
                 .andExpect(status().isAccepted())
-                .andExpect(jsonPath("$.status", is("employee_review")))
+                .andExpect(jsonPath("$.status", is("uploaded_extracting")))
                 .andExpect(jsonPath("$.version", is(1)))
                 .andReturn();
 

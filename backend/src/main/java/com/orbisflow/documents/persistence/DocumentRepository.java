@@ -62,6 +62,26 @@ public class DocumentRepository {
                 .stream().findFirst();
     }
 
+    public Optional<Document> findCurrentByRequestId(UUID requestId) {
+        return jdbc.query("""
+                SELECT id, request_id, uploaded_by_user_id, s3_object_key,
+                       original_filename, mime_type, file_size_bytes,
+                       is_current, created_at
+                FROM documents
+                WHERE request_id = ? AND is_current
+                """, (rs, row) -> new Document(
+                rs.getObject("id", UUID.class),
+                rs.getObject("request_id", UUID.class),
+                rs.getObject("uploaded_by_user_id", UUID.class),
+                rs.getString("s3_object_key"),
+                rs.getString("original_filename"),
+                rs.getString("mime_type"),
+                rs.getLong("file_size_bytes"),
+                rs.getBoolean("is_current"),
+                rs.getTimestamp("created_at").toInstant()), requestId)
+                .stream().findFirst();
+    }
+
     public record ScopedDocument(
             Document document,
             UUID employeeId,

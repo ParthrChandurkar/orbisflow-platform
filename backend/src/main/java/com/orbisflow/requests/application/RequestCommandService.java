@@ -1,6 +1,7 @@
 package com.orbisflow.requests.application;
 
 import com.orbisflow.auth.domain.JwtService.AuthenticatedUser;
+import com.orbisflow.audit.persistence.AuditLogRepository;
 import com.orbisflow.common.errors.ApiErrorCode;
 import com.orbisflow.common.errors.ApiException;
 import com.orbisflow.documents.application.InvoiceFileValidator;
@@ -11,6 +12,7 @@ import com.orbisflow.requests.api.RequestDtos.RequestSummary;
 import com.orbisflow.requests.domain.Request;
 import com.orbisflow.requests.domain.RequestStatus;
 import com.orbisflow.requests.persistence.RequestRepository;
+import com.orbisflow.requests.persistence.ExtractedInvoiceDataRepository;
 import com.orbisflow.users.domain.UserRole;
 import com.orbisflow.users.persistence.UserRepository;
 import java.time.Instant;
@@ -27,6 +29,9 @@ public class RequestCommandService {
     private final DocumentRepository documents;
     private final S3DocumentStore objectStore;
     private final InvoiceFileValidator validator;
+    private final ExtractedInvoiceDataRepository extractedData;
+    private final AuditLogRepository audit;
+    private final ExtractionCoordinator extraction;
     private final TransactionTemplate transactions;
 
     public RequestCommandService(
@@ -35,16 +40,25 @@ public class RequestCommandService {
             DocumentRepository documents,
             S3DocumentStore objectStore,
             InvoiceFileValidator validator,
+            ExtractedInvoiceDataRepository extractedData,
+            AuditLogRepository audit,
+            ExtractionCoordinator extraction,
             TransactionTemplate transactions) {
         this.users = users;
         this.requests = requests;
         this.documents = documents;
         this.objectStore = objectStore;
         this.validator = validator;
+        this.extractedData = extractedData;
+        this.audit = audit;
+        this.extraction = extraction;
         this.transactions = transactions;
     }
 
-    public RequestSummary create(AuthenticatedUser principal, MultipartFile file) {
+    public RequestSummary create(
+            AuthenticatedUser principal,
+            MultipartFile file,
+            String correlationId) {
         var employee = users.findById(principal.id())
                 .filter(user -> user.role() == UserRole.EMPLOYEE)
                 .orElseThrow(() -> new ApiException(
@@ -78,11 +92,20 @@ public class RequestCommandService {
             transactions.executeWithoutResult(status -> {
                 requests.insert(request);
                 documents.insert(document);
+                extractedData.createPending(requestId);
+                audit.appendUser(
+                        requestId,
+                        employee.id(),
+                        "upload",
+                        null,
+                        RequestStatus.UPLOADED_EXTRACTING,
+                        java.util.Map.of("document_id", documentId));
             });
         } catch (RuntimeException exception) {
             objectStore.deleteQuietly(objectKey);
             throw exception;
         }
+        extraction.start(requestId, request.version(), correlationId);
         return RequestSummary.from(request);
     }
 }

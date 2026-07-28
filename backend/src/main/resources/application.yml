@@ -38,6 +38,8 @@ orbisflow:
     port: ${REDIS_PORT:6379}
   ai-service:
     base-url: ${AI_SERVICE_BASE_URL:http://localhost:8000}
+    connect-timeout: PT2S
+    read-timeout: PT60S
   storage:
     s3:
       bucket: ${S3_BUCKET:orbisflow-invoices}

@@ -1,6 +1,7 @@
 package com.orbisflow.documents.application;
 
 import com.orbisflow.auth.domain.JwtService.AuthenticatedUser;
+import com.orbisflow.audit.persistence.AuditLogRepository;
 import com.orbisflow.common.errors.ApiErrorCode;
 import com.orbisflow.common.errors.ApiException;
 import com.orbisflow.documents.api.DocumentDtos.AccessLink;
@@ -9,9 +10,11 @@ import com.orbisflow.documents.persistence.DocumentRepository;
 import com.orbisflow.documents.persistence.DocumentRepository.ScopedDocument;
 import com.orbisflow.documents.persistence.S3DocumentStore;
 import com.orbisflow.requests.api.RequestDtos.RequestSummary;
+import com.orbisflow.requests.application.ExtractionCoordinator;
 import com.orbisflow.requests.domain.Request;
 import com.orbisflow.requests.domain.RequestStatus;
 import com.orbisflow.requests.persistence.RequestRepository;
+import com.orbisflow.requests.persistence.ExtractedInvoiceDataRepository;
 import com.orbisflow.users.domain.UserRole;
 import java.io.IOException;
 import java.time.Instant;
@@ -28,6 +31,9 @@ public class DocumentService {
     private final S3DocumentStore objectStore;
     private final InvoiceFileValidator validator;
     private final DocumentAccessTokenService accessTokens;
+    private final ExtractedInvoiceDataRepository extractedData;
+    private final AuditLogRepository audit;
+    private final ExtractionCoordinator extraction;
     private final TransactionTemplate transactions;
 
     public DocumentService(
@@ -36,12 +42,18 @@ public class DocumentService {
             S3DocumentStore objectStore,
             InvoiceFileValidator validator,
             DocumentAccessTokenService accessTokens,
+            ExtractedInvoiceDataRepository extractedData,
+            AuditLogRepository audit,
+            ExtractionCoordinator extraction,
             TransactionTemplate transactions) {
         this.requests = requests;
         this.documents = documents;
         this.objectStore = objectStore;
         this.validator = validator;
         this.accessTokens = accessTokens;
+        this.extractedData = extractedData;
+        this.audit = audit;
+        this.extraction = extraction;
         this.transactions = transactions;
     }
 
@@ -49,7 +61,8 @@ public class DocumentService {
             AuthenticatedUser principal,
             UUID requestId,
             long expectedVersion,
-            MultipartFile file) {
+            MultipartFile file,
+            String correlationId) {
         if (expectedVersion < 0) {
             throw new ApiException(
                     HttpStatus.BAD_REQUEST, ApiErrorCode.INVALID_REQUEST,
@@ -78,9 +91,7 @@ public class DocumentService {
         objectStore.put(objectKey, upload.bytes(), upload.mimeType());
         try {
             transactions.executeWithoutResult(status -> {
-                // Stage 14a rotates the document and version only. Stage 14b owns
-                // the extraction-driven status/reset transitions and retry attempt.
-                int updated = requests.incrementVersionForDocumentReplacement(
+                int updated = requests.beginDocumentReplacement(
                         requestId, principal.id(), expectedVersion);
                 if (updated != 1) {
                     throw new ApiException(
@@ -89,12 +100,33 @@ public class DocumentService {
                 }
                 documents.clearCurrent(requestId);
                 documents.insert(replacement);
+                extractedData.resetPending(requestId);
+                if (current.status() == RequestStatus.REJECTED) {
+                    audit.appendUser(
+                            requestId,
+                            principal.id(),
+                            "resubmission",
+                            RequestStatus.REJECTED,
+                            RequestStatus.EMPLOYEE_REVIEW,
+                            java.util.Map.of("reason", "replacement_document"));
+                }
+                audit.appendUser(
+                        requestId,
+                        principal.id(),
+                        "upload",
+                        current.status() == RequestStatus.REJECTED
+                                ? RequestStatus.EMPLOYEE_REVIEW
+                                : current.status(),
+                        RequestStatus.UPLOADED_EXTRACTING,
+                        java.util.Map.of("document_id", replacement.id()));
             });
         } catch (RuntimeException exception) {
             objectStore.deleteQuietly(objectKey);
             throw exception;
         }
-        return RequestSummary.from(ownedRequest(requestId, principal.id()));
+        Request updated = ownedRequest(requestId, principal.id());
+        extraction.start(requestId, updated.version(), correlationId);
+        return RequestSummary.from(updated);
     }
 
     public AccessLink createAccessLink(AuthenticatedUser principal, UUID documentId) {
