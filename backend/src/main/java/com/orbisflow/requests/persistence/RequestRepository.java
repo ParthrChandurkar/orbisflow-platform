@@ -29,6 +29,9 @@ public class RequestRepository {
     public Optional<Request> findOwnedById(UUID requestId, UUID employeeId) {
         return queryOne("""
                 SELECT id, employee_id, manager_id, status::text, version,
+                       manager_decision, manager_decided_by_user_id,
+                       manager_decided_at, rejection_reason,
+                       payment_status::text, processed_by_user_id, processed_at,
                        created_at, updated_at
                 FROM requests
                 WHERE id = ? AND employee_id = ?
@@ -38,10 +41,27 @@ public class RequestRepository {
     public Optional<Request> findById(UUID requestId) {
         return queryOne("""
                 SELECT id, employee_id, manager_id, status::text, version,
+                       manager_decision, manager_decided_by_user_id,
+                       manager_decided_at, rejection_reason,
+                       payment_status::text, processed_by_user_id, processed_at,
                        created_at, updated_at
                 FROM requests
                 WHERE id = ?
                 """, requestId);
+    }
+
+    public Optional<Request> findAssignedPostRouting(UUID requestId, UUID managerId) {
+        return queryOne("""
+                SELECT id, employee_id, manager_id, status::text, version,
+                       manager_decision, manager_decided_by_user_id,
+                       manager_decided_at, rejection_reason,
+                       payment_status::text, processed_by_user_id, processed_at,
+                       created_at, updated_at
+                FROM requests
+                WHERE id = ?
+                  AND manager_id = ?
+                  AND status IN ('manager_review', 'rejected', 'finance_review', 'processed')
+                """, requestId, managerId);
     }
 
     private Optional<Request> queryOne(String sql, Object... arguments) {
@@ -51,6 +71,13 @@ public class RequestRepository {
                 rs.getObject("manager_id", UUID.class),
                 RequestStatus.fromDatabase(rs.getString("status")),
                 rs.getLong("version"),
+                rs.getString("manager_decision"),
+                rs.getObject("manager_decided_by_user_id", UUID.class),
+                instant(rs.getTimestamp("manager_decided_at")),
+                rs.getString("rejection_reason"),
+                rs.getString("payment_status"),
+                rs.getObject("processed_by_user_id", UUID.class),
+                instant(rs.getTimestamp("processed_at")),
                 rs.getTimestamp("created_at").toInstant(),
                 rs.getTimestamp("updated_at").toInstant()), arguments)
                 .stream().findFirst();
@@ -131,5 +158,47 @@ public class RequestRepository {
                   AND version = ?
                   AND status IN ('employee_review', 'rejected')
                 """, requestId, employeeId, expectedVersion);
+    }
+
+    public int approve(UUID requestId, UUID managerId, long expectedVersion) {
+        return jdbc.update("""
+                UPDATE requests
+                SET status = 'finance_review',
+                    manager_decision = 'approved',
+                    manager_decided_by_user_id = ?,
+                    manager_decided_at = now(),
+                    rejection_reason = NULL,
+                    version = version + 1,
+                    updated_at = now()
+                WHERE id = ?
+                  AND manager_id = ?
+                  AND version = ?
+                  AND status = 'manager_review'
+                """, managerId, requestId, managerId, expectedVersion);
+    }
+
+    public int reject(
+            UUID requestId,
+            UUID managerId,
+            long expectedVersion,
+            String reason) {
+        return jdbc.update("""
+                UPDATE requests
+                SET status = 'rejected',
+                    manager_decision = 'rejected',
+                    manager_decided_by_user_id = ?,
+                    manager_decided_at = now(),
+                    rejection_reason = ?,
+                    version = version + 1,
+                    updated_at = now()
+                WHERE id = ?
+                  AND manager_id = ?
+                  AND version = ?
+                  AND status = 'manager_review'
+                """, managerId, reason, requestId, managerId, expectedVersion);
+    }
+
+    private static java.time.Instant instant(Timestamp value) {
+        return value == null ? null : value.toInstant();
     }
 }

@@ -111,6 +111,12 @@ public final class RequestDtos {
     ) {
     }
 
+    public record RejectDecision(
+            @JsonProperty("expected_version") Long expectedVersion,
+            String reason
+    ) {
+    }
+
     public record DocumentView(
             UUID id,
             @JsonProperty("original_filename") String originalFilename,
@@ -140,11 +146,26 @@ public final class RequestDtos {
             @JsonProperty("updated_at") Instant updatedAt,
             @JsonProperty("latest_required_action") String latestRequiredAction,
             @JsonProperty("current_owner_role") String currentOwnerRole,
-            @JsonProperty("manager_decision") Object managerDecision,
-            Object processing,
+            @JsonProperty("manager_decision") ManagerDecisionView managerDecision,
+            ProcessingView processing,
             DocumentView document,
             @JsonProperty("extracted_data") ExtractionView extractedData
     ) {
+        public record ManagerDecisionView(
+                String decision,
+                @JsonProperty("decided_by_user_id") UUID decidedByUserId,
+                @JsonProperty("decided_at") Instant decidedAt,
+                @JsonProperty("rejection_reason") String rejectionReason
+        ) {
+        }
+
+        public record ProcessingView(
+                @JsonProperty("payment_status") String paymentStatus,
+                @JsonProperty("processed_by_user_id") UUID processedByUserId,
+                @JsonProperty("processed_at") Instant processedAt
+        ) {
+        }
+
         public static RequestDetail from(
                 Request request,
                 ExtractedInvoiceData data,
@@ -156,11 +177,24 @@ public final class RequestDtos {
                 case FINANCE_REVIEW -> "finance";
                 default -> null;
             };
+            ManagerDecisionView decision = request.managerDecision() == null
+                    ? null
+                    : new ManagerDecisionView(
+                            request.managerDecision(),
+                            request.managerDecidedByUserId(),
+                            request.managerDecidedAt(),
+                            request.rejectionReason());
+            ProcessingView processing = request.paymentStatus() == null
+                    ? null
+                    : new ProcessingView(
+                            request.paymentStatus(),
+                            request.processedByUserId(),
+                            request.processedAt());
             return new RequestDetail(
                     summary.id(), summary.status(), summary.version(),
                     summary.employeeId(), summary.managerId(), summary.vendor(),
                     summary.totalAmount(), summary.submittedAt(), summary.updatedAt(),
-                    summary.latestRequiredAction(), ownerRole, null, null,
+                    summary.latestRequiredAction(), ownerRole, decision, processing,
                     document == null ? null : DocumentView.from(document),
                     data == null ? null : ExtractionView.from(data));
         }

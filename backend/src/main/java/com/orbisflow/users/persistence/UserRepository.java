@@ -2,6 +2,7 @@ package com.orbisflow.users.persistence;
 
 import com.orbisflow.users.domain.User;
 import com.orbisflow.users.domain.UserRole;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -27,6 +28,13 @@ public class UserRepository {
                 SELECT id, login_identifier, password_hash, role::text, manager_id
                 FROM users WHERE id = ?
                 """, (rs, row) -> mapUser(rs), id).stream().findFirst();
+    }
+
+    public List<UUID> findIdsByRole(UserRole role) {
+        return jdbc.queryForList(
+                "SELECT id FROM users WHERE role = ?::user_role ORDER BY id",
+                UUID.class,
+                role.claimValue());
     }
 
     private User mapUser(java.sql.ResultSet rs) throws java.sql.SQLException {

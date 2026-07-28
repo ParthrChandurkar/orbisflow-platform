@@ -82,7 +82,9 @@ public class RequestCommandService {
         Instant now = Instant.now();
         Request request = new Request(
                 requestId, employee.id(), managerId,
-                RequestStatus.UPLOADED_EXTRACTING, 0, now, now);
+                RequestStatus.UPLOADED_EXTRACTING, 0,
+                null, null, null, null, null, null, null,
+                now, now);
         Document document = new Document(
                 documentId, requestId, employee.id(), objectKey,
                 upload.filename(), upload.mimeType(), upload.bytes().length, true, now);
