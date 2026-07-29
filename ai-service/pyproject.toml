@@ -5,15 +5,21 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "orbisflow-ai-service"
 version = "0.1.0"
-description = "Internal OCR and extraction service skeleton for Orbis Flow"
+description = "Internal OCR and invoice extraction service for Orbis Flow"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115,<1.0",
+    "pillow>=11.3,<12.0",
+    "pydantic-settings>=2.10,<3.0",
+    "pypdfium2>=4.30,<5.0",
+    "pytesseract>=0.3.13,<1.0",
+    "python-multipart>=0.0.20,<1.0",
     "uvicorn>=0.34,<1.0",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "httpx>=0.28,<1.0",
     "pytest>=8.3,<9.0",
     "ruff>=0.9,<1.0",
 ]

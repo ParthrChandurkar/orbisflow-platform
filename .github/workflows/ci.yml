@@ -39,6 +39,9 @@ jobs:
           java-version: "17"
           cache: maven
           cache-dependency-path: backend/pom.xml
+      - name: Build real OCR service image for integration tests
+        working-directory: ai-service
+        run: docker build --tag orbisflow-ai-stage14b .
       - run: mvn --batch-mode verify
 
   ai-service:
@@ -54,6 +57,7 @@ jobs:
           cache: pip
       - run: python -m pip install --upgrade pip
       - run: python -m pip install ".[dev]"
+      - run: sudo apt-get update && sudo apt-get install --yes tesseract-ocr fonts-dejavu-core
       - run: ruff check app tests
       - run: python -m compileall -q app
-      - run: python -c "from app.main import app; assert app.title == 'Orbis Flow AI Service'"
+      - run: pytest -q
