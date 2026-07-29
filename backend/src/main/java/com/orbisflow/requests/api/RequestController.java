@@ -7,8 +7,11 @@ import com.orbisflow.requests.api.RequestDtos.ExpectedVersion;
 import com.orbisflow.requests.api.RequestDtos.ExtractionView;
 import com.orbisflow.requests.api.RequestDtos.RequestDetail;
 import com.orbisflow.requests.api.RequestDtos.RequestSummary;
+import com.orbisflow.requests.api.RequestDtos.RejectDecision;
 import com.orbisflow.requests.application.EmployeeExtractionService;
+import com.orbisflow.requests.application.ManagerDecisionService;
 import com.orbisflow.requests.application.RequestCommandService;
+import com.orbisflow.requests.application.RequestQueryService;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -29,12 +32,25 @@ import org.springframework.web.multipart.MultipartFile;
 public class RequestController {
     private final RequestCommandService commands;
     private final EmployeeExtractionService extractions;
+    private final ManagerDecisionService decisions;
+    private final RequestQueryService queries;
 
     public RequestController(
             RequestCommandService commands,
-            EmployeeExtractionService extractions) {
+            EmployeeExtractionService extractions,
+            ManagerDecisionService decisions,
+            RequestQueryService queries) {
         this.commands = commands;
         this.extractions = extractions;
+        this.decisions = decisions;
+        this.queries = queries;
+    }
+
+    @GetMapping("/{requestId}")
+    ResponseEntity<RequestDetail> detail(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @PathVariable UUID requestId) {
+        return ResponseEntity.ok(queries.get(principal, requestId));
     }
 
     @PostMapping
@@ -88,5 +104,30 @@ public class RequestController {
                         requestId,
                         body == null ? null : body.expectedVersion(),
                         correlationId));
+    }
+
+    @PostMapping("/{requestId}/approve")
+    @PreAuthorize("hasRole('MANAGER')")
+    ResponseEntity<RequestDetail> approve(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @PathVariable UUID requestId,
+            @RequestBody ExpectedVersion body) {
+        return ResponseEntity.ok(decisions.approve(
+                principal,
+                requestId,
+                body == null ? null : body.expectedVersion()));
+    }
+
+    @PostMapping("/{requestId}/reject")
+    @PreAuthorize("hasRole('MANAGER')")
+    ResponseEntity<RequestDetail> reject(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @PathVariable UUID requestId,
+            @RequestBody RejectDecision body) {
+        return ResponseEntity.ok(decisions.reject(
+                principal,
+                requestId,
+                body == null ? null : body.expectedVersion(),
+                body == null ? null : body.reason()));
     }
 }
