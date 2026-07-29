@@ -198,6 +198,29 @@ public class RequestRepository {
                 """, managerId, reason, requestId, managerId, expectedVersion);
     }
 
+    public int process(
+            UUID requestId,
+            UUID financeUserId,
+            long expectedVersion,
+            String paymentStatus) {
+        return jdbc.update("""
+                UPDATE requests
+                SET status = 'processed',
+                    payment_status = ?::payment_status,
+                    processed_by_user_id = ?,
+                    processed_at = now(),
+                    version = version + 1,
+                    updated_at = now()
+                WHERE id = ?
+                  AND version = ?
+                  AND status = 'finance_review'
+                """,
+                paymentStatus,
+                financeUserId,
+                requestId,
+                expectedVersion);
+    }
+
     private static java.time.Instant instant(Timestamp value) {
         return value == null ? null : value.toInstant();
     }

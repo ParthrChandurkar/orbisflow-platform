@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/dashboards/manager")
-@PreAuthorize("hasRole('MANAGER')")
+@RequestMapping("/api/v1/dashboards")
 public class DashboardController {
     private final DashboardQueryService queries;
 
@@ -23,7 +22,8 @@ public class DashboardController {
         this.queries = queries;
     }
 
-    @GetMapping("/requests")
+    @GetMapping("/manager/requests")
+    @PreAuthorize("hasRole('MANAGER')")
     ResponseEntity<PageResponse<RequestSummary>> requests(
             @AuthenticationPrincipal AuthenticatedUser principal,
             @RequestParam(required = false) String status,
@@ -36,9 +36,24 @@ public class DashboardController {
                         principal, status, page, size, sort, direction));
     }
 
-    @GetMapping("/team-activity")
+    @GetMapping("/manager/team-activity")
+    @PreAuthorize("hasRole('MANAGER')")
     ResponseEntity<TeamActivity> teamActivity(
             @AuthenticationPrincipal AuthenticatedUser principal) {
         return ResponseEntity.ok(queries.teamActivity(principal));
+    }
+
+    @GetMapping("/finance/requests")
+    @PreAuthorize("hasRole('FINANCE')")
+    ResponseEntity<PageResponse<RequestSummary>> financeRequests(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String direction) {
+        return ResponseEntity.ok(
+                queries.financeRequests(
+                        principal, status, page, size, sort, direction));
     }
 }

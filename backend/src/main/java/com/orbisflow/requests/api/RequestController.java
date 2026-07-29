@@ -5,10 +5,12 @@ import com.orbisflow.auth.domain.JwtService.AuthenticatedUser;
 import com.orbisflow.requests.api.RequestDtos.CorrectionResult;
 import com.orbisflow.requests.api.RequestDtos.ExpectedVersion;
 import com.orbisflow.requests.api.RequestDtos.ExtractionView;
+import com.orbisflow.requests.api.RequestDtos.ProcessRequest;
 import com.orbisflow.requests.api.RequestDtos.RequestDetail;
 import com.orbisflow.requests.api.RequestDtos.RequestSummary;
 import com.orbisflow.requests.api.RequestDtos.RejectDecision;
 import com.orbisflow.requests.application.EmployeeExtractionService;
+import com.orbisflow.requests.application.FinanceProcessingService;
 import com.orbisflow.requests.application.ManagerDecisionService;
 import com.orbisflow.requests.application.RequestCommandService;
 import com.orbisflow.requests.application.RequestQueryService;
@@ -33,16 +35,19 @@ public class RequestController {
     private final RequestCommandService commands;
     private final EmployeeExtractionService extractions;
     private final ManagerDecisionService decisions;
+    private final FinanceProcessingService processing;
     private final RequestQueryService queries;
 
     public RequestController(
             RequestCommandService commands,
             EmployeeExtractionService extractions,
             ManagerDecisionService decisions,
+            FinanceProcessingService processing,
             RequestQueryService queries) {
         this.commands = commands;
         this.extractions = extractions;
         this.decisions = decisions;
+        this.processing = processing;
         this.queries = queries;
     }
 
@@ -129,5 +134,18 @@ public class RequestController {
                 requestId,
                 body == null ? null : body.expectedVersion(),
                 body == null ? null : body.reason()));
+    }
+
+    @PostMapping("/{requestId}/process")
+    @PreAuthorize("hasRole('FINANCE')")
+    ResponseEntity<RequestDetail> process(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @PathVariable UUID requestId,
+            @RequestBody ProcessRequest body) {
+        return ResponseEntity.ok(processing.process(
+                principal,
+                requestId,
+                body == null ? null : body.expectedVersion(),
+                body == null ? null : body.paymentStatus()));
     }
 }
