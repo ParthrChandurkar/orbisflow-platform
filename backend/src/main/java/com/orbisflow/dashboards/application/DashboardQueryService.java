@@ -15,13 +15,21 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DashboardQueryService {
-    private static final Set<String> STATUSES = Set.of(
+    private static final Set<String> MANAGER_STATUSES = Set.of(
             "manager_review", "rejected", "finance_review", "processed");
-    private static final Map<String, String> SORT_COLUMNS = Map.of(
+    private static final Map<String, String> MANAGER_SORT_COLUMNS = Map.of(
             "submitted_at", "r.created_at",
             "updated_at", "r.updated_at",
             "total_amount", "e.total_amount",
             "status", "r.status");
+    private static final Map<String, String> FINANCE_QUEUE_SORT_COLUMNS = Map.of(
+            "updated_at", "r.updated_at",
+            "total_amount", "e.total_amount",
+            "status", "r.status");
+    private static final Map<String, String> FINANCE_PROCESSED_SORT_COLUMNS = Map.of(
+            "processed_at", "r.processed_at",
+            "updated_at", "r.updated_at",
+            "total_amount", "e.total_amount");
 
     private final DashboardQueryRepository repository;
 
@@ -42,8 +50,8 @@ public class DashboardQueryService {
         String effectiveDirection = direction == null ? "asc" : direction.toLowerCase();
         int effectivePage = page == null ? 0 : page;
         int effectiveSize = size == null ? 20 : size;
-        if (!STATUSES.contains(effectiveStatus)
-                || !SORT_COLUMNS.containsKey(effectiveSort)
+        if (!MANAGER_STATUSES.contains(effectiveStatus)
+                || !MANAGER_SORT_COLUMNS.containsKey(effectiveSort)
                 || (!effectiveDirection.equals("asc")
                         && !effectiveDirection.equals("desc"))
                 || effectivePage < 0
@@ -56,10 +64,56 @@ public class DashboardQueryService {
                 effectiveStatus,
                 effectivePage,
                 effectiveSize,
-                SORT_COLUMNS.get(effectiveSort),
+                MANAGER_SORT_COLUMNS.get(effectiveSort),
                 effectiveDirection.toUpperCase());
         long count = repository.managerRequestCount(
                 principal.id(), effectiveStatus);
+        return PageResponse.of(
+                items,
+                effectivePage,
+                effectiveSize,
+                count,
+                effectiveSort,
+                effectiveDirection);
+    }
+
+    public PageResponse<RequestSummary> financeRequests(
+            AuthenticatedUser principal,
+            String status,
+            Integer page,
+            Integer size,
+            String sort,
+            String direction) {
+        requireFinance(principal);
+        String effectiveStatus = status == null ? "finance_review" : status;
+        boolean processed = effectiveStatus.equals("processed");
+        Map<String, String> allowedSorts = processed
+                ? FINANCE_PROCESSED_SORT_COLUMNS
+                : FINANCE_QUEUE_SORT_COLUMNS;
+        String effectiveSort = sort == null
+                ? (processed ? "processed_at" : "updated_at")
+                : sort;
+        String effectiveDirection = direction == null
+                ? (processed ? "desc" : "asc")
+                : direction.toLowerCase();
+        int effectivePage = page == null ? 0 : page;
+        int effectiveSize = size == null ? 20 : size;
+        if ((!effectiveStatus.equals("finance_review") && !processed)
+                || !allowedSorts.containsKey(effectiveSort)
+                || (!effectiveDirection.equals("asc")
+                        && !effectiveDirection.equals("desc"))
+                || effectivePage < 0
+                || effectiveSize < 1
+                || effectiveSize > 100) {
+            throw invalid();
+        }
+        var items = repository.financeRequests(
+                effectiveStatus,
+                effectivePage,
+                effectiveSize,
+                allowedSorts.get(effectiveSort),
+                effectiveDirection.toUpperCase());
+        long count = repository.financeRequestCount(effectiveStatus);
         return PageResponse.of(
                 items,
                 effectivePage,
@@ -76,6 +130,15 @@ public class DashboardQueryService {
 
     private void requireManager(AuthenticatedUser principal) {
         if (principal.role() != UserRole.MANAGER) {
+            throw new ApiException(
+                    HttpStatus.FORBIDDEN,
+                    ApiErrorCode.ACCESS_DENIED,
+                    "This action is not permitted.");
+        }
+    }
+
+    private void requireFinance(AuthenticatedUser principal) {
+        if (principal.role() != UserRole.FINANCE) {
             throw new ApiException(
                     HttpStatus.FORBIDDEN,
                     ApiErrorCode.ACCESS_DENIED,

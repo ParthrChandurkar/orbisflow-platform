@@ -117,6 +117,12 @@ public final class RequestDtos {
     ) {
     }
 
+    public record ProcessRequest(
+            @JsonProperty("expected_version") Long expectedVersion,
+            @JsonProperty("payment_status") String paymentStatus
+    ) {
+    }
+
     public record DocumentView(
             UUID id,
             @JsonProperty("original_filename") String originalFilename,

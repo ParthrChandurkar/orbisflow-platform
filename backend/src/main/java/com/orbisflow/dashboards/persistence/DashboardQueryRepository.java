@@ -61,6 +61,42 @@ public class DashboardQueryRepository {
         return count == null ? 0 : count;
     }
 
+    public List<RequestSummary> financeRequests(
+            String status,
+            int page,
+            int size,
+            String sortColumn,
+            String direction) {
+        String sql = """
+                SELECT r.id, r.employee_id, r.manager_id, r.status::text, r.version,
+                       r.manager_decision, r.manager_decided_by_user_id,
+                       r.manager_decided_at, r.rejection_reason,
+                       r.payment_status::text, r.processed_by_user_id, r.processed_at,
+                       r.created_at, r.updated_at,
+                       e.vendor, e.total_amount
+                FROM requests r
+                LEFT JOIN extracted_invoice_data e ON e.request_id = r.id
+                WHERE r.status = ?::request_status
+                ORDER BY %s %s NULLS LAST, r.id %s
+                LIMIT ? OFFSET ?
+                """.formatted(sortColumn, direction, direction);
+        return jdbc.query(
+                sql,
+                (rs, row) -> RequestSummary.from(mapRequest(rs), summaryExtraction(rs)),
+                status,
+                size,
+                page * size);
+    }
+
+    public long financeRequestCount(String status) {
+        Long count = jdbc.queryForObject("""
+                SELECT count(*)
+                FROM requests
+                WHERE status = ?::request_status
+                """, Long.class, status);
+        return count == null ? 0 : count;
+    }
+
     public TeamActivity teamActivity(UUID managerId) {
         return jdbc.queryForObject("""
                 SELECT
