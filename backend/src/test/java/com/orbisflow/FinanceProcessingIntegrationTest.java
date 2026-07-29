@@ -193,17 +193,10 @@ class FinanceProcessingIntegrationTest {
     }
 
     @Test
-    void repeatedOrWrongStateProcessingReturnsStateConflict() throws Exception {
+    void repeatedProcessingReturnsStateConflict() throws Exception {
         UUID eligible = insertRequest(
                 EMPLOYEE_ONE,
                 "finance_review",
-                0,
-                null,
-                Instant.now(),
-                null);
-        UUID preApproval = insertRequest(
-                EMPLOYEE_ONE,
-                "manager_review",
                 0,
                 null,
                 Instant.now(),
@@ -218,11 +211,24 @@ class FinanceProcessingIntegrationTest {
                 """)
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error.code", is("STATE_CONFLICT")));
+    }
+
+    @Test
+    void processingRequestStillInManagerReviewReturnsNotFound() throws Exception {
+        UUID preApproval = insertRequest(
+                EMPLOYEE_ONE,
+                "manager_review",
+                0,
+                null,
+                Instant.now(),
+                null);
+        LoginCookies finance = login("finance1");
+
         performProcess(finance, preApproval, """
                 {"expected_version":0,"payment_status":"scheduled"}
                 """)
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error.code", is("STATE_CONFLICT")));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error.code", is("RESOURCE_NOT_FOUND")));
     }
 
     @Test
