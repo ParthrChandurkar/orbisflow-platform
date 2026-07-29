@@ -22,6 +22,20 @@ public class DashboardController {
         this.queries = queries;
     }
 
+    @GetMapping("/employee/requests")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    ResponseEntity<PageResponse<RequestSummary>> employeeRequests(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String direction) {
+        return ResponseEntity.ok(
+                queries.employeeRequests(
+                        principal, status, page, size, sort, direction));
+    }
+
     @GetMapping("/manager/requests")
     @PreAuthorize("hasRole('MANAGER')")
     ResponseEntity<PageResponse<RequestSummary>> requests(

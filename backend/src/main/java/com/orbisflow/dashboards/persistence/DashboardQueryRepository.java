@@ -21,6 +21,51 @@ public class DashboardQueryRepository {
         this.jdbc = jdbc;
     }
 
+    public List<RequestSummary> employeeRequests(
+            UUID employeeId,
+            String status,
+            int page,
+            int size,
+            String sortColumn,
+            String direction) {
+        String statusPredicate = status == null
+                ? ""
+                : " AND r.status = ?::request_status";
+        String sql = """
+                SELECT r.id, r.employee_id, r.manager_id, r.status::text, r.version,
+                       r.manager_decision, r.manager_decided_by_user_id,
+                       r.manager_decided_at, r.rejection_reason,
+                       r.payment_status::text, r.processed_by_user_id, r.processed_at,
+                       r.created_at, r.updated_at,
+                       e.vendor, e.total_amount
+                FROM requests r
+                LEFT JOIN extracted_invoice_data e ON e.request_id = r.id
+                WHERE r.employee_id = ?
+                %s
+                ORDER BY %s %s NULLS LAST, r.id %s
+                LIMIT ? OFFSET ?
+                """.formatted(statusPredicate, sortColumn, direction, direction);
+        Object[] parameters = status == null
+                ? new Object[] {employeeId, size, page * size}
+                : new Object[] {employeeId, status, size, page * size};
+        return jdbc.query(
+                sql,
+                (rs, row) -> RequestSummary.from(mapRequest(rs), summaryExtraction(rs)),
+                parameters);
+    }
+
+    public long employeeRequestCount(UUID employeeId, String status) {
+        Long count = status == null
+                ? jdbc.queryForObject("""
+                        SELECT count(*) FROM requests WHERE employee_id = ?
+                        """, Long.class, employeeId)
+                : jdbc.queryForObject("""
+                        SELECT count(*) FROM requests
+                        WHERE employee_id = ? AND status = ?::request_status
+                        """, Long.class, employeeId, status);
+        return count == null ? 0 : count;
+    }
+
     public List<RequestSummary> managerRequests(
             UUID managerId,
             String status,
