@@ -6,6 +6,7 @@ import com.orbisflow.auth.domain.JwtService.AuthenticatedUser;
 import com.orbisflow.common.errors.ApiErrorCode;
 import com.orbisflow.common.errors.ApiException;
 import com.orbisflow.documents.persistence.DocumentRepository;
+import com.orbisflow.notifications.persistence.NotificationRepository;
 import com.orbisflow.requests.api.RequestDtos.CorrectionResult;
 import com.orbisflow.requests.api.RequestDtos.ExtractionView;
 import com.orbisflow.requests.api.RequestDtos.RequestDetail;
@@ -43,6 +44,7 @@ public class EmployeeExtractionService {
     private final DocumentRepository documents;
     private final InvoiceValidationService validation;
     private final AuditLogRepository audit;
+    private final NotificationRepository notifications;
     private final ExtractionCoordinator extraction;
     private final TransactionTemplate transactions;
 
@@ -52,6 +54,7 @@ public class EmployeeExtractionService {
             DocumentRepository documents,
             InvoiceValidationService validation,
             AuditLogRepository audit,
+            NotificationRepository notifications,
             ExtractionCoordinator extraction,
             TransactionTemplate transactions) {
         this.requests = requests;
@@ -59,6 +62,7 @@ public class EmployeeExtractionService {
         this.documents = documents;
         this.validation = validation;
         this.audit = audit;
+        this.notifications = notifications;
         this.extraction = extraction;
         this.transactions = transactions;
     }
@@ -154,6 +158,8 @@ public class EmployeeExtractionService {
                             : current.status(),
                     RequestStatus.MANAGER_REVIEW,
                     Map.of("route", "manager_review"));
+            notifications.insert(
+                    current.managerId(), requestId, "manager_assignment");
         });
         Request updated = requiredOwned(requestId, principal.id());
         return RequestDetail.from(
