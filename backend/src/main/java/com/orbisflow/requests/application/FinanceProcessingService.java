@@ -76,7 +76,7 @@ public class FinanceProcessingService {
             Request request,
             long expectedVersion) {
         if (request.status() != RequestStatus.FINANCE_REVIEW) {
-            throw stateConflict();
+            throw processScopeOrStateError(request);
         }
         if (request.version() != expectedVersion) {
             throw versionConflict();
@@ -89,12 +89,19 @@ public class FinanceProcessingService {
         Request current = requests.findById(requestId)
                 .orElseThrow(RequestQueryService::notFound);
         if (current.status() != RequestStatus.FINANCE_REVIEW) {
-            return stateConflict();
+            return processScopeOrStateError(current);
         }
         if (current.version() != expectedVersion) {
             return versionConflict();
         }
         return stateConflict();
+    }
+
+    private ApiException processScopeOrStateError(Request request) {
+        if (request.status() == RequestStatus.PROCESSED) {
+            return stateConflict();
+        }
+        return RequestQueryService.notFound();
     }
 
     private void requireFinance(AuthenticatedUser principal) {
