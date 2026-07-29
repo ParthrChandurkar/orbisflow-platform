@@ -1,4 +1,14 @@
 package com.orbisflow.notifications.domain;
 
-public class Notification {
+import java.time.Instant;
+import java.util.UUID;
+
+public record Notification(
+        UUID id,
+        UUID userId,
+        UUID requestId,
+        String type,
+        Instant readAt,
+        Instant createdAt
+) {
 }

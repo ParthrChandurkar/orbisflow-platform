@@ -2,6 +2,7 @@ package com.orbisflow.requests.application;
 
 import com.orbisflow.audit.persistence.AuditLogRepository;
 import com.orbisflow.integration.ai.FastApiExtractionDtos.ClientResult;
+import com.orbisflow.notifications.persistence.NotificationRepository;
 import com.orbisflow.requests.domain.ExtractedInvoiceData.InvoiceLineItem;
 import com.orbisflow.requests.domain.Request;
 import com.orbisflow.requests.domain.RequestStatus;
@@ -19,6 +20,7 @@ public class ExtractionWorkflowService {
     private final ExtractedInvoiceDataRepository extractedData;
     private final InvoiceValidationService validation;
     private final AuditLogRepository audit;
+    private final NotificationRepository notifications;
     private final TransactionTemplate transactions;
 
     public ExtractionWorkflowService(
@@ -26,11 +28,13 @@ public class ExtractionWorkflowService {
             ExtractedInvoiceDataRepository extractedData,
             InvoiceValidationService validation,
             AuditLogRepository audit,
+            NotificationRepository notifications,
             TransactionTemplate transactions) {
         this.requests = requests;
         this.extractedData = extractedData;
         this.validation = validation;
         this.audit = audit;
+        this.notifications = notifications;
         this.transactions = transactions;
     }
 
@@ -93,6 +97,13 @@ public class ExtractionWorkflowService {
                     RequestStatus.UPLOADED_EXTRACTING,
                     target,
                     Map.of("route", target.value()));
+            if (target == RequestStatus.MANAGER_REVIEW) {
+                notifications.insert(
+                        current.managerId(), requestId, "manager_assignment");
+            } else {
+                notifications.insert(
+                        current.employeeId(), requestId, "employee_correction");
+            }
         });
     }
 

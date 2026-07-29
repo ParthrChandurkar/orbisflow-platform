@@ -15,6 +15,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DashboardQueryService {
+    private static final Set<String> EMPLOYEE_STATUSES = Set.of(
+            "uploaded_extracting", "employee_review", "manager_review",
+            "rejected", "finance_review", "processed");
+    private static final Map<String, String> EMPLOYEE_SORT_COLUMNS = Map.of(
+            "submitted_at", "r.created_at",
+            "updated_at", "r.updated_at",
+            "total_amount", "e.total_amount",
+            "status", "r.status");
     private static final Set<String> MANAGER_STATUSES = Set.of(
             "manager_review", "rejected", "finance_review", "processed");
     private static final Map<String, String> MANAGER_SORT_COLUMNS = Map.of(
@@ -35,6 +43,46 @@ public class DashboardQueryService {
 
     public DashboardQueryService(DashboardQueryRepository repository) {
         this.repository = repository;
+    }
+
+    public PageResponse<RequestSummary> employeeRequests(
+            AuthenticatedUser principal,
+            String status,
+            Integer page,
+            Integer size,
+            String sort,
+            String direction) {
+        requireEmployee(principal);
+        String effectiveSort = sort == null ? "submitted_at" : sort;
+        String effectiveDirection = direction == null
+                ? "desc"
+                : direction.toLowerCase();
+        int effectivePage = page == null ? 0 : page;
+        int effectiveSize = size == null ? 20 : size;
+        if ((status != null && !EMPLOYEE_STATUSES.contains(status))
+                || !EMPLOYEE_SORT_COLUMNS.containsKey(effectiveSort)
+                || (!effectiveDirection.equals("asc")
+                        && !effectiveDirection.equals("desc"))
+                || effectivePage < 0
+                || effectiveSize < 1
+                || effectiveSize > 100) {
+            throw invalid();
+        }
+        var items = repository.employeeRequests(
+                principal.id(),
+                status,
+                effectivePage,
+                effectiveSize,
+                EMPLOYEE_SORT_COLUMNS.get(effectiveSort),
+                effectiveDirection.toUpperCase());
+        long count = repository.employeeRequestCount(principal.id(), status);
+        return PageResponse.of(
+                items,
+                effectivePage,
+                effectiveSize,
+                count,
+                effectiveSort,
+                effectiveDirection);
     }
 
     public PageResponse<RequestSummary> managerRequests(
@@ -126,6 +174,15 @@ public class DashboardQueryService {
     public TeamActivity teamActivity(AuthenticatedUser principal) {
         requireManager(principal);
         return repository.teamActivity(principal.id());
+    }
+
+    private void requireEmployee(AuthenticatedUser principal) {
+        if (principal.role() != UserRole.EMPLOYEE) {
+            throw new ApiException(
+                    HttpStatus.FORBIDDEN,
+                    ApiErrorCode.ACCESS_DENIED,
+                    "This action is not permitted.");
+        }
     }
 
     private void requireManager(AuthenticatedUser principal) {
