@@ -56,6 +56,10 @@ test("employee corrects and resubmits a flagged extraction", async ({
   await page.getByRole("button", { name: "Save corrections" }).click();
   const patchResponse = await patchResponsePromise;
   expect(patchResponse.status()).toBe(200);
+  expect(patchResponse.request().postDataJSON()).toMatchObject({
+    expected_version: 1,
+    total_amount: "150.00",
+  });
   const patchBody = await patchResponse.json();
   expect(patchBody.version).toBeGreaterThan(1);
   expect(patchBody.extracted_data.validation_flags).toEqual([]);
