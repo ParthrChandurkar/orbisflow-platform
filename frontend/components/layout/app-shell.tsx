@@ -48,7 +48,9 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
                 pathname === link.href ||
                 (link.href.endsWith("/requests") &&
                   pathname.startsWith(`${link.href}/`) &&
-                  !pathname.endsWith("/new"))
+                  !pathname.endsWith("/new")) ||
+                (user.role !== "employee" &&
+                  pathname.startsWith(`/${user.role}/requests/`))
                   ? "nav-link active"
                   : "nav-link"
               }

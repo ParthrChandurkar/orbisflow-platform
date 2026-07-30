@@ -31,6 +31,25 @@ export const retryExtraction = (id: string, expectedVersion: number) =>
     body: JSON.stringify({ expected_version: expectedVersion }),
   });
 
+export const approveRequest = (id: string, expectedVersion: number) =>
+  apiRequest<RequestDetail>(`/api/v1/requests/${id}/approve`, {
+    method: "POST",
+    body: JSON.stringify({ expected_version: expectedVersion }),
+  });
+
+export const rejectRequest = (
+  id: string,
+  expectedVersion: number,
+  reason: string,
+) =>
+  apiRequest<RequestDetail>(`/api/v1/requests/${id}/reject`, {
+    method: "POST",
+    body: JSON.stringify({
+      expected_version: expectedVersion,
+      reason,
+    }),
+  });
+
 export function createRequest(file: File, onProgress?: (value: number) => void) {
   const formData = new FormData();
   formData.append("file", file);

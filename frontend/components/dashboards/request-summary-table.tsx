@@ -2,7 +2,13 @@ import Link from "next/link";
 import type { RequestSummary } from "@/lib/contracts/requests";
 import { RequestStatusBadge } from "@/components/requests/request-status-badge";
 
-export function RequestSummaryTable({ items }: { items: RequestSummary[] }) {
+export function RequestSummaryTable({
+  items,
+  requestBasePath = "/employee/requests",
+}: {
+  items: RequestSummary[];
+  requestBasePath?: string;
+}) {
   return (
     <div className="table-wrap">
       <table>
@@ -32,7 +38,7 @@ export function RequestSummaryTable({ items }: { items: RequestSummary[] }) {
               <td>
                 <Link
                   className="row-link"
-                  href={`/employee/requests/${request.id}`}
+                  href={`${requestBasePath}/${request.id}`}
                 >
                   View →
                 </Link>
