@@ -114,14 +114,18 @@ export default function EmployeeRequestDetailPage() {
         active={extraction.status === "pending"}
         onPoll={poll}
       />
-      {actionError && (
+      {(extraction.validation_flags.length > 0 || actionError) && (
         <ValidationBanner
           flags={extraction.validation_flags}
-          message={`${actionError.message}${
-            actionError.code === "VERSION_CONFLICT"
-              ? " The latest request data has been reloaded."
-              : ""
-          }`}
+          message={
+            actionError
+              ? `${actionError.message}${
+                  actionError.code === "VERSION_CONFLICT"
+                    ? " The latest request data has been reloaded."
+                    : ""
+                }`
+              : undefined
+          }
         />
       )}
       {editable ? (
