@@ -1,3 +1,5 @@
+import { RoleHomeRedirect } from "@/components/auth/role-home-redirect";
+
 export default function HomePage() {
-  return <h1>Orbis Flow</h1>;
+  return <RoleHomeRedirect />;
 }

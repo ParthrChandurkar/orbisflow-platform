@@ -12,6 +12,9 @@ node_modules/
 out/
 coverage/
 *.tsbuildinfo
+test-results/
+playwright-report/
+hs_err_pid*.log
 
 # Java / Maven
 target/
