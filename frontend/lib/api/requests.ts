@@ -50,6 +50,19 @@ export const rejectRequest = (
     }),
   });
 
+export const processRequest = (
+  id: string,
+  expectedVersion: number,
+  paymentStatus: "paid" | "scheduled",
+) =>
+  apiRequest<RequestDetail>(`/api/v1/requests/${id}/process`, {
+    method: "POST",
+    body: JSON.stringify({
+      expected_version: expectedVersion,
+      payment_status: paymentStatus,
+    }),
+  });
+
 export function createRequest(file: File, onProgress?: (value: number) => void) {
   const formData = new FormData();
   formData.append("file", file);

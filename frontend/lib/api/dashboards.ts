@@ -19,3 +19,9 @@ export function getManagerTeamActivity() {
     "/api/v1/dashboards/manager/team-activity",
   );
 }
+
+export function getFinanceRequests(query: URLSearchParams) {
+  return apiRequest<PageResponse<RequestSummary>>(
+    `/api/v1/dashboards/finance/requests?${query.toString()}`,
+  );
+}
