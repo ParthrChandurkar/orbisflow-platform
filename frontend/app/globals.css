@@ -37,7 +37,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -198,7 +199,8 @@ select {
 }
 
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: var(--green);
   box-shadow: 0 0 0 3px rgba(23, 107, 74, 0.12);
 }
@@ -234,6 +236,17 @@ select:focus {
 .button.primary:hover:not(:disabled) {
   border-color: var(--green-dark);
   background: var(--green-dark);
+}
+
+.button.danger {
+  border-color: #bc5951;
+  background: #9f3f39;
+  color: white;
+}
+
+.button.danger:hover:not(:disabled) {
+  border-color: #7f3030;
+  background: #7f3030;
 }
 
 .button.small {
@@ -403,6 +416,60 @@ select:focus {
   padding: 1.35rem;
   background: var(--surface);
   box-shadow: 0 5px 20px rgba(24, 55, 43, 0.035);
+}
+
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.activity-card {
+  display: grid;
+  min-height: 145px;
+  align-content: space-between;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1.15rem;
+  background: var(--surface);
+  box-shadow: 0 5px 20px rgba(24, 55, 43, 0.035);
+}
+
+.activity-card span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.activity-card strong {
+  color: var(--green-dark);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 2.25rem;
+}
+
+.activity-card small {
+  color: var(--muted);
+}
+
+.activity-card.rejected strong {
+  color: var(--red);
+}
+
+.skeleton-card {
+  background:
+    linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.75) 45%, transparent 70%),
+    #e8eeeb;
+  background-size: 220% 100%;
+  animation: shimmer 1.2s infinite linear;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -220% 0;
+  }
 }
 
 .toolbar {
@@ -757,6 +824,62 @@ td {
   gap: 1rem;
 }
 
+.decision-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  border-color: #b8d7c8;
+  background: linear-gradient(135deg, white, #f2f8f5);
+}
+
+.decision-card p {
+  max-width: 680px;
+  margin-bottom: 0.4rem;
+}
+
+.decision-card small {
+  color: var(--muted);
+}
+
+.dialog-backdrop {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(15, 34, 27, 0.58);
+  backdrop-filter: blur(5px);
+}
+
+.dialog-panel {
+  width: min(500px, 100%);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  background: white;
+  box-shadow: 0 24px 70px rgba(10, 28, 21, 0.28);
+}
+
+.dialog-panel textarea {
+  resize: vertical;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+.field-error {
+  display: block;
+  margin-top: 0.4rem;
+  color: var(--red);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .timeline {
   position: relative;
   display: grid;
@@ -913,7 +1036,8 @@ td {
 
   .detail-grid,
   .detail-grid.three,
-  .form-grid {
+  .form-grid,
+  .activity-grid {
     grid-template-columns: 1fr 1fr;
   }
 }
@@ -922,6 +1046,7 @@ td {
   .page-heading,
   .action-card,
   .document-card,
+  .decision-card,
   .pagination {
     align-items: stretch;
     flex-direction: column;
@@ -929,7 +1054,8 @@ td {
 
   .detail-grid,
   .detail-grid.three,
-  .form-grid {
+  .form-grid,
+  .activity-grid {
     grid-template-columns: 1fr;
   }
 
