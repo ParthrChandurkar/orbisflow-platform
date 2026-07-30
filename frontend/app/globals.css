@@ -865,6 +865,54 @@ td {
   resize: vertical;
 }
 
+.payment-options {
+  display: grid;
+  gap: 0.65rem;
+  margin: 1.25rem 0 0;
+  border: 0;
+  padding: 0;
+}
+
+.payment-options legend {
+  margin-bottom: 0.45rem;
+  color: #3f4d47;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.payment-options label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  padding: 0.8rem;
+  cursor: pointer;
+}
+
+.payment-options label.selected {
+  border-color: var(--green);
+  background: var(--green-soft);
+}
+
+.payment-options input {
+  min-height: auto;
+  width: 1rem;
+  height: 1rem;
+}
+
+.payment-options span,
+.payment-options small {
+  display: block;
+}
+
+.payment-options small {
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
