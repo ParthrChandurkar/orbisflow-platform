@@ -1,3 +1,5 @@
+import { LoadingState } from "@/components/feedback/page-state";
+
 export default function FinanceQueueLoading() {
-  return <p>Loading finance queue…</p>;
+  return <LoadingState label="Loading Finance queue…" />;
 }

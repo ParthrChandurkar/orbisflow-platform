@@ -1,0 +1,335 @@
+/* Final Stage 21 cascade layer, loaded after the original application styles. */
+
+.sidebar {
+  border-right-color: rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 20% 0, rgba(255, 255, 255, 0.08), transparent 13rem),
+    var(--role-sidebar);
+  color: white;
+}
+
+.sidebar .brand {
+  color: white;
+}
+
+.sidebar .brand-mark {
+  background: var(--role-accent);
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.72rem;
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: white;
+}
+
+.nav-link.active {
+  background: var(--role-accent);
+  color: white;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--role-accent) 22%, transparent);
+}
+
+.sidebar-footer {
+  border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+.sidebar-footer strong {
+  color: white;
+}
+
+.sidebar-footer .role-label,
+.sidebar-footer .text-button {
+  color: rgba(255, 255, 255, 0.64);
+}
+
+.topbar {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  min-height: 64px;
+  border-bottom-color: rgba(197, 210, 203, 0.78);
+  background: rgba(250, 252, 251, 0.88);
+}
+
+.card,
+.activity-card {
+  border-color: #d8e0dc;
+  border-radius: 1.05rem;
+  box-shadow:
+    0 1px 2px rgba(16, 33, 27, 0.035),
+    0 10px 30px rgba(16, 33, 27, 0.035);
+}
+
+.status-badge {
+  gap: 0.33rem;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  padding: 0.3rem 0.58rem;
+}
+
+.state-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  margin-bottom: 1rem;
+  background: var(--role-soft, var(--green-soft));
+  color: var(--role-accent, var(--green));
+}
+
+.state-icon.error {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.decision-card {
+  border-color: color-mix(in srgb, var(--role-accent) 24%, var(--line));
+  background: linear-gradient(130deg, white 38%, var(--role-soft) 140%);
+}
+
+.activity-card strong {
+  color: var(--role-accent-dark);
+  font-family: inherit;
+  font-weight: 730;
+}
+
+.dropzone {
+  border-color: color-mix(in srgb, var(--role-accent, var(--green)) 50%, #b7c7bf);
+  background: linear-gradient(145deg, #fbfdfc, var(--role-soft, #f1f8f5));
+}
+
+.dropzone.dragging {
+  border-color: var(--role-accent, var(--green));
+  background: var(--role-soft, var(--green-soft));
+}
+
+.upload-icon {
+  background: var(--role-soft, var(--green-soft));
+  color: var(--role-accent, var(--green)) !important;
+}
+
+.progress span {
+  background: var(--role-accent, var(--green));
+}
+
+.payment-options label.selected {
+  border-color: var(--role-accent);
+  background: var(--role-soft);
+}
+
+.notification-item.unread {
+  background: linear-gradient(90deg, var(--role-soft, var(--green-soft)), transparent 62%);
+}
+
+.notification-item.unread .notification-dot {
+  background: var(--role-accent, var(--green));
+}
+
+@media (max-width: 780px) {
+  .app-frame {
+    display: block;
+  }
+
+  .sidebar {
+    position: sticky;
+    z-index: 40;
+    top: 0;
+    display: flex;
+    height: auto;
+    min-height: 64px;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.7rem 1rem;
+  }
+
+  .sidebar .brand {
+    flex: 0 0 auto;
+    padding: 0;
+  }
+
+  .sidebar nav {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    overflow-x: auto;
+  }
+
+  .nav-link {
+    flex: 0 0 auto;
+    padding: 0.62rem 0.72rem;
+  }
+
+  .sidebar-footer {
+    flex: 0 0 auto;
+    margin: 0;
+    border: 0;
+    padding: 0;
+  }
+
+  .sidebar-footer > div,
+  .logout-button span {
+    display: none;
+  }
+
+  .topbar {
+    top: 64px;
+  }
+
+  .page-container {
+    padding: 1.65rem 1.25rem 3rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .request-table,
+  .responsive-table {
+    overflow: visible;
+  }
+
+  .request-table table,
+  .request-table tbody,
+  .request-table tr,
+  .request-table td,
+  .responsive-table table,
+  .responsive-table tbody,
+  .responsive-table tr,
+  .responsive-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .request-table thead,
+  .responsive-table thead {
+    display: none;
+  }
+
+  .request-table tr,
+  .responsive-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.62rem 1rem;
+    margin-bottom: 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 0.9rem;
+    padding: 1rem;
+    background: white;
+    box-shadow: 0 4px 16px rgba(16, 33, 27, 0.035);
+  }
+
+  .request-table td,
+  .responsive-table td {
+    display: grid;
+    gap: 0.2rem;
+    border: 0;
+    padding: 0;
+  }
+
+  .request-table td::before,
+  .responsive-table td::before {
+    color: var(--muted);
+    content: attr(data-label);
+    font-size: 0.66rem;
+    font-weight: 760;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .request-table td:first-child,
+  .request-table td:last-child,
+  .responsive-table td:nth-child(2) {
+    grid-column: 1 / -1;
+  }
+
+  .request-table td:last-child {
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .responsive-table tfoot {
+    display: block;
+  }
+
+  .responsive-table tfoot tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.7rem;
+    padding: 0.85rem 0.2rem 0;
+  }
+
+  .responsive-table tfoot td {
+    width: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .sidebar {
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .brand-name {
+    display: none;
+  }
+
+  .sidebar nav {
+    order: 3;
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    width: 100%;
+    flex-basis: 100%;
+    gap: 0.25rem;
+    overflow: visible;
+  }
+
+  .nav-link {
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.58rem 0.3rem;
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+
+  .topbar {
+    top: 113px;
+    min-height: 54px;
+    padding-inline: 1rem;
+  }
+
+  .page-container {
+    padding: 1.25rem 0.9rem 2.5rem;
+  }
+
+  .page-heading .button {
+    width: 100%;
+  }
+
+  .card {
+    border-radius: 0.9rem;
+    padding: 1rem;
+  }
+
+  .toolbar {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar label {
+    min-width: 0;
+  }
+
+  .detail-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-grid,
+  .detail-grid.three,
+  .form-grid,
+  .activity-grid,
+  .skeleton-metric-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -10,7 +10,7 @@ export function RequestSummaryTable({
   requestBasePath?: string;
 }) {
   return (
-    <div className="table-wrap">
+    <div className="table-wrap request-table">
       <table>
         <thead>
           <tr>
@@ -24,18 +24,20 @@ export function RequestSummaryTable({
         <tbody>
           {items.map((request) => (
             <tr key={request.id}>
-              <td>
+              <td data-label="Invoice">
                 <strong>{request.vendor ?? "Extraction pending"}</strong>
                 <span className="table-subtitle">
                   {request.id.slice(0, 8).toUpperCase()}
                 </span>
               </td>
-              <td>
+              <td data-label="Status">
                 <RequestStatusBadge status={request.status} />
               </td>
-              <td>{formatAmount(request.total_amount)}</td>
-              <td>{formatDate(request.submitted_at)}</td>
-              <td>
+              <td className="numeric" data-label="Amount">
+                {formatAmount(request.total_amount)}
+              </td>
+              <td data-label="Submitted">{formatDate(request.submitted_at)}</td>
+              <td data-label="Action">
                 <Link
                   className="row-link"
                   href={`${requestBasePath}/${request.id}`}
@@ -55,7 +57,7 @@ export function formatAmount(value: string | null): string {
   if (!value) return "—";
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 4,
+    maximumFractionDigits: 2,
   }).format(Number(value));
 }
 

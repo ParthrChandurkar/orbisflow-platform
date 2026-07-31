@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, DragEvent, useRef, useState } from "react";
+import { FileCheck2, LoaderCircle, UploadCloud } from "lucide-react";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_TYPES = new Set([
@@ -87,7 +88,13 @@ export function FileUploadDropzone({
           ref={input}
           type="file"
         />
-        <span className="upload-icon">↑</span>
+        <span className="upload-icon">
+          {file ? (
+            <FileCheck2 aria-hidden="true" size={24} />
+          ) : (
+            <UploadCloud aria-hidden="true" size={24} />
+          )}
+        </span>
         <strong>{file ? file.name : "Drop an invoice here"}</strong>
         <span>
           {file
@@ -107,7 +114,14 @@ export function FileUploadDropzone({
         onClick={upload}
         type="button"
       >
-        {busy ? `Uploading ${progress}%` : compact ? "Replace document" : "Submit invoice"}
+        {busy && (
+          <LoaderCircle aria-hidden="true" className="spin-icon" size={17} />
+        )}
+        {busy
+          ? `Uploading ${progress}%`
+          : compact
+            ? "Replace document"
+            : "Submit invoice"}
       </button>
     </div>
   );

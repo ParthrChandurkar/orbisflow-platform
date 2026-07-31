@@ -8,7 +8,10 @@ import {
 } from "@/lib/api/notifications";
 import type { NotificationPage } from "@/lib/contracts/notifications";
 import { ApiError } from "@/lib/contracts/api-error";
-import { LoadingState, PageState } from "@/components/feedback/page-state";
+import {
+  NotificationSkeleton,
+  PageState,
+} from "@/components/feedback/page-state";
 import { NotificationList } from "@/components/notifications/notification-list";
 
 export default function NotificationsPage() {
@@ -75,7 +78,9 @@ export default function NotificationsPage() {
             Unread
           </button>
         </div>
-        {!data && !error && <LoadingState label="Loading notifications…" />}
+        {!data && !error && (
+          <NotificationSkeleton label="Loading notifications…" />
+        )}
         {error && (
           <PageState
             title="Unable to load notifications"

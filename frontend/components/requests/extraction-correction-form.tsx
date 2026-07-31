@@ -5,6 +5,7 @@ import type {
   CorrectionPayload,
   ExtractionView,
 } from "@/lib/contracts/requests";
+import { LoaderCircle, Plus, Send, Trash2 } from "lucide-react";
 
 interface EditableItem {
   description: string;
@@ -101,7 +102,8 @@ export function ExtractionCorrectionForm({
               }
               type="button"
             >
-              + Add line
+              <Plus aria-hidden="true" size={15} />
+              Add line
             </button>
           </div>
           {items.length === 0 && (
@@ -136,13 +138,16 @@ export function ExtractionCorrectionForm({
                 }
                 type="button"
               >
-                ×
+                <Trash2 aria-hidden="true" size={16} />
               </button>
             </div>
           ))}
         </div>
         <div className="button-row">
           <button className="button" disabled={busy} type="submit">
+            {busy && (
+              <LoaderCircle aria-hidden="true" className="spin-icon" size={16} />
+            )}
             {busy ? "Saving…" : "Save corrections"}
           </button>
           <button
@@ -151,6 +156,7 @@ export function ExtractionCorrectionForm({
             onClick={() => void onResubmit()}
             type="button"
           >
+            <Send aria-hidden="true" size={16} />
             Resubmit for approval
           </button>
         </div>

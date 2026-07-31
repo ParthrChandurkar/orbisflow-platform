@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getCurrentUser, login } from "@/lib/api/auth";
 import { ApiError } from "@/lib/contracts/api-error";
 import { roleHome } from "@/lib/auth/role-routes";
+import { ArrowRight, LoaderCircle } from "lucide-react";
 
 export function LoginForm() {
   const [identifier, setIdentifier] = useState("");
@@ -67,7 +68,17 @@ export function LoginForm() {
       </label>
       {error && <div className="alert error">{error}</div>}
       <button className="button primary" disabled={submitting} type="submit">
-        {submitting ? "Signing in…" : "Sign in"}
+        {submitting ? (
+          <>
+            <LoaderCircle aria-hidden="true" className="spin-icon" size={17} />
+            Signing in…
+          </>
+        ) : (
+          <>
+            Sign in
+            <ArrowRight aria-hidden="true" size={17} />
+          </>
+        )}
       </button>
     </form>
   );

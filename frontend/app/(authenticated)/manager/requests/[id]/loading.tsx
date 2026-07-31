@@ -1,3 +1,5 @@
+import { DetailSkeleton } from "@/components/feedback/page-state";
+
 export default function ManagerRequestDetailLoading() {
-  return <p>Loading request…</p>;
+  return <DetailSkeleton />;
 }

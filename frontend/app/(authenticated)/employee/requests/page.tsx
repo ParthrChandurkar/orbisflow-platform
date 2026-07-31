@@ -110,12 +110,26 @@ export default function EmployeeRequestsPage() {
         )}
         {data?.items.length === 0 && (
           <PageState
-            title="No requests yet"
-            message="Submit your first invoice to start the approval flow."
+            title={search.get("status") ? "No matching requests" : "No requests yet"}
+            message={
+              search.get("status")
+                ? "No requests currently match this status. Clear the filter to see your full history."
+                : "Submit your first invoice to start the approval flow."
+            }
             action={
-              <Link className="button primary" href="/employee/requests/new">
-                Submit invoice
-              </Link>
+              search.get("status") ? (
+                <button
+                  className="button"
+                  onClick={() => update("status", "")}
+                  type="button"
+                >
+                  Clear status filter
+                </button>
+              ) : (
+                <Link className="button primary" href="/employee/requests/new">
+                  Submit your first invoice
+                </Link>
+              )
             }
           />
         )}

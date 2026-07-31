@@ -7,14 +7,22 @@ import { logout } from "@/lib/api/auth";
 import { useAuth } from "@/components/auth/auth-guard";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { roleHome } from "@/lib/auth/role-routes";
+import {
+  Bell,
+  CircleDollarSign,
+  ClipboardCheck,
+  FileText,
+  LogOut,
+  Upload,
+} from "lucide-react";
 
 export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
   const user = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const employeeLinks = [
-    { href: "/employee/requests", label: "My requests" },
-    { href: "/employee/requests/new", label: "Submit invoice" },
+    { href: "/employee/requests", label: "My requests", icon: FileText },
+    { href: "/employee/requests/new", label: "Submit invoice", icon: Upload },
   ];
   const links =
     user.role === "employee"
@@ -23,6 +31,8 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
           {
             href: roleHome(user.role),
             label: user.role === "manager" ? "Approval queue" : "Finance queue",
+            icon:
+              user.role === "manager" ? ClipboardCheck : CircleDollarSign,
           },
         ];
 
@@ -35,11 +45,11 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
   }
 
   return (
-    <div className="app-frame">
+    <div className="app-frame" data-role={user.role}>
       <aside className="sidebar">
         <Link className="brand" href={roleHome(user.role)}>
           <span className="brand-mark">O</span>
-          <span>Orbis Flow</span>
+          <span className="brand-name">Orbis Flow</span>
         </Link>
         <nav aria-label="Primary">
           {links.map((link) => (
@@ -57,6 +67,7 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
               href={link.href}
               key={link.href}
             >
+              <link.icon aria-hidden="true" size={18} strokeWidth={1.9} />
               {link.label}
             </Link>
           ))}
@@ -66,6 +77,7 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
             }
             href="/notifications"
           >
+            <Bell aria-hidden="true" size={18} strokeWidth={1.9} />
             Notifications
           </Link>
         </nav>
@@ -74,15 +86,22 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
             <strong>{user.login_identifier}</strong>
             <span className="role-label">{user.role}</span>
           </div>
-          <button className="text-button" onClick={signOut} type="button">
-            Log out
+          <button className="text-button logout-button" onClick={signOut} type="button">
+            <LogOut aria-hidden="true" size={15} />
+            <span>Log out</span>
           </button>
         </div>
       </aside>
       <div className="app-content">
         <header className="topbar">
           <div>
-            <span className="eyebrow">Invoice operations</span>
+            <span className="eyebrow">
+              {user.role === "employee"
+                ? "Submission workspace"
+                : user.role === "manager"
+                  ? "Approval workspace"
+                  : "Payment workspace"}
+            </span>
           </div>
           <NotificationBell />
         </header>
