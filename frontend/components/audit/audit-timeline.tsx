@@ -1,5 +1,6 @@
 import type { AuditEventView } from "@/lib/contracts/audit";
 import { formatDate } from "@/components/dashboards/request-summary-table";
+import { History } from "lucide-react";
 
 export function AuditTimeline({ events }: { events: AuditEventView[] }) {
   return (
@@ -11,7 +12,10 @@ export function AuditTimeline({ events }: { events: AuditEventView[] }) {
         </div>
       </div>
       {events.length === 0 ? (
-        <p className="muted">No audit events recorded yet.</p>
+        <div className="compact-empty">
+          <History aria-hidden="true" size={20} />
+          <span>Workflow history will appear as this request progresses.</span>
+        </div>
       ) : (
         <ol className="timeline">
           {events.map((event) => (

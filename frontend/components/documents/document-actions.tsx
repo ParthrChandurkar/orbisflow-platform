@@ -5,6 +5,7 @@ import type { DocumentView } from "@/lib/contracts/requests";
 import { getDocumentAccessLink } from "@/lib/api/documents";
 import { absoluteApiUrl } from "@/lib/api/browser-client";
 import { ApiError } from "@/lib/contracts/api-error";
+import { ExternalLink, LoaderCircle } from "lucide-react";
 
 export function DocumentActions({ document }: { document: DocumentView }) {
   const [busy, setBusy] = useState(false);
@@ -42,7 +43,17 @@ export function DocumentActions({ document }: { document: DocumentView }) {
         </p>
       </div>
       <button className="button" disabled={busy} onClick={openDocument}>
-        {busy ? "Preparing secure link…" : "View document"}
+        {busy ? (
+          <>
+            <LoaderCircle aria-hidden="true" className="spin-icon" size={16} />
+            Preparing secure link…
+          </>
+        ) : (
+          <>
+            View document
+            <ExternalLink aria-hidden="true" size={16} />
+          </>
+        )}
       </button>
       {error && <div className="alert error">{error}</div>}
     </section>

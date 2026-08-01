@@ -1,3 +1,5 @@
+import { LoadingState } from "@/components/feedback/page-state";
+
 export default function ManagerQueueLoading() {
-  return <p>Loading manager queue…</p>;
+  return <LoadingState label="Loading Manager queue…" />;
 }

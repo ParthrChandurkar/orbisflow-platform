@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CheckCircle2, LoaderCircle } from "lucide-react";
 
 export type PaymentStatus = "paid" | "scheduled";
 
@@ -50,6 +51,7 @@ export function FinanceProcessDialog({
           onClick={() => setOpen(true)}
           type="button"
         >
+          <CheckCircle2 aria-hidden="true" size={17} />
           Mark processed
         </button>
       </section>
@@ -116,6 +118,13 @@ export function FinanceProcessDialog({
                 onClick={() => void submit()}
                 type="button"
               >
+                {busy && (
+                  <LoaderCircle
+                    aria-hidden="true"
+                    className="spin-icon"
+                    size={16}
+                  />
+                )}
                 {busy ? "Saving…" : "Confirm processing"}
               </button>
             </div>

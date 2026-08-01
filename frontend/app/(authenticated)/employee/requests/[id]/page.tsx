@@ -19,7 +19,7 @@ import {
 } from "@/lib/api/requests";
 import { getAudit } from "@/lib/api/audit";
 import { ApiError } from "@/lib/contracts/api-error";
-import { LoadingState, PageState } from "@/components/feedback/page-state";
+import { DetailSkeleton, PageState } from "@/components/feedback/page-state";
 import { RequestDetailCard } from "@/components/requests/request-detail-card";
 import { ExtractionDataCard } from "@/components/requests/extraction-data-card";
 import { ExtractionCorrectionForm } from "@/components/requests/extraction-correction-form";
@@ -85,7 +85,7 @@ export default function EmployeeRequestDetailPage() {
     }
   }
 
-  if (!request && !error) return <LoadingState label="Loading request…" />;
+  if (!request && !error) return <DetailSkeleton />;
   if (error) {
     return (
       <PageState

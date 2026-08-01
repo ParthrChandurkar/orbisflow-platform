@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check, LoaderCircle, X } from "lucide-react";
 
 type DecisionMode = "approve" | "reject";
 
@@ -58,6 +59,7 @@ export function ManagerDecisionDialog({
             onClick={() => setMode("reject")}
             type="button"
           >
+            <X aria-hidden="true" size={16} />
             Reject
           </button>
           <button
@@ -66,6 +68,7 @@ export function ManagerDecisionDialog({
             onClick={() => setMode("approve")}
             type="button"
           >
+            <Check aria-hidden="true" size={16} />
             Approve
           </button>
         </div>
@@ -124,6 +127,13 @@ export function ManagerDecisionDialog({
                 onClick={() => void submit()}
                 type="button"
               >
+                {busy && (
+                  <LoaderCircle
+                    aria-hidden="true"
+                    className="spin-icon"
+                    size={16}
+                  />
+                )}
                 {busy
                   ? "Saving…"
                   : mode === "approve"

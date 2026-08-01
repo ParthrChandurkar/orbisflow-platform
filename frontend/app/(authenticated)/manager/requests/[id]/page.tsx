@@ -18,7 +18,7 @@ import { ExtractionDataCard } from "@/components/requests/extraction-data-card";
 import { ManagerDecisionDialog } from "@/components/requests/manager-decision-dialog";
 import { DocumentActions } from "@/components/documents/document-actions";
 import { AuditTimeline } from "@/components/audit/audit-timeline";
-import { LoadingState, PageState } from "@/components/feedback/page-state";
+import { DetailSkeleton, PageState } from "@/components/feedback/page-state";
 
 export default function ManagerRequestDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -78,7 +78,7 @@ export default function ManagerRequestDetailPage() {
     }
   }
 
-  if (!request && !error) return <LoadingState label="Loading request…" />;
+  if (!request && !error) return <DetailSkeleton />;
   if (error) {
     return (
       <PageState
