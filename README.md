@@ -73,7 +73,7 @@ Spring Boot is the sole business API and the only service allowed to access Post
 - [Git](https://git-scm.com/)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine with the Compose plugin
 - At least 6 GB of memory available to Docker for parallel image builds and OCR
-- For invoice upload: a private AWS S3 bucket or compatible S3 endpoint and access credentials
+- Ports 3000, 5432, 6379, 8000, 8080, 9000, and 9001 available locally
 
 ### 1. Clone and configure
 
@@ -89,24 +89,7 @@ On Windows PowerShell, replace the last command with:
 Copy-Item .env.example .env
 ```
 
-Edit the root `.env` before starting:
-
-```dotenv
-# Required for browser login over local plain HTTP only. Use true behind production HTTPS.
-SECURE_COOKIES=false
-
-# Required for invoice upload/extraction.
-S3_BUCKET=your-private-bucket
-AWS_REGION=your-bucket-region
-AWS_ACCESS_KEY_ID=your-local-development-access-key
-AWS_SECRET_ACCESS_KEY=your-local-development-secret
-
-# Set these only for an S3-compatible local endpoint.
-S3_ENDPOINT=
-S3_PATH_STYLE=false
-```
-
-The Compose stack reads the root `.env`. The service-level `.env.example` files under `frontend/`, `backend/`, and `ai-service/` are templates for running those services outside Compose. Do not commit populated `.env` files.
+No external credentials are required. The copied defaults use a local MinIO container, create a private `orbisflow-invoices` bucket automatically, and use non-production development credentials. The Compose stack reads the root `.env`; service-level `.env.example` files are templates for running services outside Compose. Do not commit populated `.env` files.
 
 ### 2. Build and start
 
@@ -119,8 +102,11 @@ Open [http://localhost:3000](http://localhost:3000). Health endpoints are availa
 
 - Spring Boot: [http://localhost:8080/api/v1/health](http://localhost:8080/api/v1/health)
 - FastAPI: [http://localhost:8000/internal/v1/health](http://localhost:8000/internal/v1/health)
+- MinIO console: [http://localhost:9001](http://localhost:9001)
 
 Flyway creates the schema and seed accounts on the first clean start. Test usernames and the shared local-only test password are documented in [`V2__seed_test_users.sql`](backend/src/main/resources/db/migration/V2__seed_test_users.sql); use an `employee*`, `manager*`, or `finance*` account for the corresponding workspace. These credentials are development fixtures and must not be used in a deployed environment.
+
+Production deployment replaces the local MinIO endpoint and development credentials with a private AWS S3 bucket and credentials supplied entirely through environment variables; application code does not change.
 
 View logs or stop and remove the containers with:
 
@@ -129,7 +115,7 @@ docker compose logs -f
 docker compose down
 ```
 
-Use `docker compose down -v` only when you intentionally want to delete local PostgreSQL and Redis volumes and re-run all migrations from a clean database.
+Use `docker compose down -v` only when you intentionally want to delete local PostgreSQL, Redis, and MinIO data and re-run all migrations from a clean database.
 
 ## Product screenshots
 
