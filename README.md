@@ -87,16 +87,18 @@ Spring Boot is the sole business API and the only service allowed to access Post
 | Data | PostgreSQL 17, Redis 7, MinIO locally, private AWS S3 in production |
 | Delivery and QA | Docker, Docker Compose, GitHub Actions, Maven, Testcontainers, Vitest, Playwright, pytest, Ruff |
 
-## Run locally
+<a id="run-locally"></a>
 
-### Prerequisites
+## 🚀 Run locally
+
+### ✅ Prerequisites
 
 - [Git](https://git-scm.com/)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine with the Compose plugin
 - At least 6 GB of memory available to Docker for parallel image builds and OCR
 - Ports 3000, 5432, 6379, 8000, 8080, 9000, and 9001 available locally
 
-### 1. Clone and configure
+### 1️⃣ Clone and configure
 
 ```sh
 git clone https://github.com/ParthrChandurkar/orbisflow-platform.git
@@ -112,14 +114,16 @@ Copy-Item .env.example .env
 
 No external credentials are required. The copied defaults use a local MinIO container, create a private `orbisflow-invoices` bucket automatically, and use non-production development credentials. The Compose stack reads the root `.env`; service-level `.env.example` files are templates for running services outside Compose. Do not commit populated `.env` files.
 
-### 2. Build and start
+### 2️⃣ Build and start
 
 ```sh
 docker compose up --build -d
 docker compose ps
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Health endpoints are available at:
+### 3️⃣ Open the app
+
+Open **[http://localhost:3000](http://localhost:3000)**. Health endpoints are available at:
 
 - Spring Boot: [http://localhost:8080/api/v1/health](http://localhost:8080/api/v1/health)
 - FastAPI: [http://localhost:8000/internal/v1/health](http://localhost:8000/internal/v1/health)
@@ -138,25 +142,34 @@ docker compose down
 
 Use `docker compose down -v` only when you intentionally want to delete local PostgreSQL, Redis, and MinIO data and re-run all migrations from a clean database.
 
-## Product screenshots
+## 🖼️ Product tour
 
-### Employee request dashboard
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <strong>👩‍💻 Employee dashboard</strong><br><br>
+      <img src="docs/evidence/stage-21/02-employee-populated.png" alt="Employee dashboard showing populated invoice requests">
+    </td>
+    <td width="50%" align="center">
+      <strong>🔎 Invoice detail</strong><br><br>
+      <img src="docs/evidence/stage-21/03-request-detail.png" alt="Request detail showing extracted invoice data and audit history">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <strong>👔 Manager queue</strong><br><br>
+      <img src="docs/evidence/stage-21/04-manager-queue.png" alt="Manager approval queue and team activity">
+    </td>
+    <td width="50%" align="center">
+      <strong>💼 Finance queue</strong><br><br>
+      <img src="docs/evidence/stage-21/05-finance-queue.png" alt="Finance processing queue">
+    </td>
+  </tr>
+</table>
 
-![Employee dashboard showing populated invoice requests](docs/evidence/stage-21/02-employee-populated.png)
+<a id="testing"></a>
 
-### Extracted invoice and audit detail
-
-![Employee request detail showing extracted invoice data and audit history](docs/evidence/stage-21/03-request-detail.png)
-
-### Manager approval queue
-
-![Manager approval queue and team activity](docs/evidence/stage-21/04-manager-queue.png)
-
-### Finance processing queue
-
-![Finance processing queue](docs/evidence/stage-21/05-finance-queue.png)
-
-## Testing
+## 🧪 Testing
 
 The repository includes:
 
@@ -182,7 +195,9 @@ npm test
 npm run test:e2e
 ```
 
-## Design documentation
+<a id="documentation"></a>
+
+## 📚 Design documentation
 
 The complete design trail is available in [`docs/`](docs/), including:
 
@@ -195,16 +210,16 @@ The complete design trail is available in [`docs/`](docs/), including:
 - [Frontend and navigation design](docs/frontend.md)
 - [Repository structure](docs/folder-structure.md)
 
-## Roadmap
+## 🗺️ Roadmap
 
 - Deploy the existing containers and managed data services to AWS when the required free-tier capacity is available.
 - Add deployment automation and production observability around the current three-service architecture.
 - Re-evaluate deliberately deferred capabilities after MVP validation: OAuth/enterprise SSO, configurable workflows, real-time notifications, and RAG or natural-language search.
 
-## License
+## 📄 License
 
 No open-source license is currently included. The repository is available for portfolio review; all rights are reserved unless a license is added later.
 
-## Author
+## 👤 Author
 
 **Parth Chandurkar** — [GitHub](https://github.com/ParthrChandurkar)
