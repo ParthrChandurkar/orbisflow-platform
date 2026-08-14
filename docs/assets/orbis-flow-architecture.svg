@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+  <title id="title">Orbis Flow system architecture</title>
+  <desc id="desc">The browser uses Next.js for pages and calls Spring Boot for authenticated business data. Spring Boot alone connects to PostgreSQL, Redis, MinIO or AWS S3, and the internal FastAPI OCR service.</desc>
+  <defs>
+    <linearGradient id="canvas" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fbfa"/>
+      <stop offset="1" stop-color="#edf4f1"/>
+    </linearGradient>
+    <linearGradient id="core" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#16735a"/>
+      <stop offset="1" stop-color="#0f5844"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#10211b" flood-opacity=".12"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b7d76"/>
+    </marker>
+    <style>
+      .title { font: 700 30px Inter, ui-sans-serif, system-ui, sans-serif; fill: #17221f; }
+      .subtitle { font: 400 15px Inter, ui-sans-serif, system-ui, sans-serif; fill: #61706a; }
+      .label { font: 700 17px Inter, ui-sans-serif, system-ui, sans-serif; fill: #17221f; }
+      .label-light { font: 700 18px Inter, ui-sans-serif, system-ui, sans-serif; fill: white; }
+      .detail { font: 400 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #61706a; }
+      .detail-light { font: 400 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #d8eee6; }
+      .edge { fill: none; stroke: #6b7d76; stroke-width: 2.2; marker-end: url(#arrow); }
+      .edge-label { font: 600 11px Inter, ui-sans-serif, system-ui, sans-serif; fill: #61706a; letter-spacing: .04em; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="640" rx="28" fill="url(#canvas)"/>
+  <text class="title" x="54" y="62">Secure three-service architecture</text>
+  <text class="subtitle" x="54" y="90">One business API • isolated OCR • PostgreSQL as the source of truth</text>
+
+  <rect x="38" y="120" width="1124" height="468" rx="24" fill="#ffffff" stroke="#d8e2dd"/>
+  <rect x="285" y="144" width="570" height="420" rx="22" fill="#f1f7f4" stroke="#bcd6cb" stroke-dasharray="7 7"/>
+  <text class="edge-label" x="310" y="174" fill="#16735a">APPLICATION SERVICES</text>
+
+  <!-- Browser -->
+  <g filter="url(#shadow)">
+    <rect x="68" y="278" width="170" height="108" rx="18" fill="#ffffff" stroke="#cfdbd6"/>
+    <circle cx="101" cy="311" r="15" fill="#e6f3ee"/>
+    <path d="M94 311h14M101 304v14" stroke="#16735a" stroke-width="2" stroke-linecap="round"/>
+    <text class="label" x="91" y="346">Browser</text>
+    <text class="detail" x="91" y="368">Three role workspaces</text>
+  </g>
+
+  <!-- Next.js -->
+  <g filter="url(#shadow)">
+    <rect x="326" y="203" width="190" height="112" rx="18" fill="#ffffff" stroke="#cad7d2"/>
+    <circle cx="362" cy="239" r="17" fill="#17221f"/>
+    <text x="353" y="245" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#ffffff">N</text>
+    <text class="label" x="390" y="243">Next.js</text>
+    <text class="detail" x="352" y="276">UI • navigation • polling</text>
+    <text class="detail" x="352" y="296">No infrastructure credentials</text>
+  </g>
+
+  <!-- Spring Boot -->
+  <g filter="url(#shadow)">
+    <rect x="551" y="288" width="256" height="142" rx="20" fill="url(#core)"/>
+    <circle cx="593" cy="330" r="18" fill="#ffffff" fill-opacity=".14"/>
+    <path d="M584 331c8-12 17-10 20-2-5-2-9 0-12 7-2-3-5-4-8-5z" fill="#ffffff"/>
+    <text class="label-light" x="624" y="335">Spring Boot</text>
+    <text class="detail-light" x="579" y="371">Auth • RBAC • workflow</text>
+    <text class="detail-light" x="579" y="393">documents • audit • notifications</text>
+    <rect x="579" y="407" width="199" height="1" fill="#ffffff" fill-opacity=".22"/>
+    <text x="579" y="423" font-family="Inter, sans-serif" font-size="10" font-weight="700" fill="#bfe5d7" letter-spacing=".08em">SOLE BUSINESS API</text>
+  </g>
+
+  <!-- FastAPI -->
+  <g filter="url(#shadow)">
+    <rect x="326" y="418" width="190" height="112" rx="18" fill="#ffffff" stroke="#8ac8b7"/>
+    <circle cx="362" cy="455" r="17" fill="#009688"/>
+    <path d="M366 442l-13 16h9l-4 11 14-17h-9z" fill="#ffffff"/>
+    <text class="label" x="390" y="459">FastAPI</text>
+    <text class="detail" x="352" y="491">Tesseract OCR</text>
+    <text class="detail" x="352" y="511">Heuristic extraction only</text>
+  </g>
+
+  <!-- Data services -->
+  <text class="edge-label" x="914" y="174">PRIVATE DATA SERVICES</text>
+  <g filter="url(#shadow)">
+    <rect x="906" y="198" width="218" height="82" rx="16" fill="#ffffff" stroke="#cbd8e8"/>
+    <circle cx="938" cy="239" r="15" fill="#e9f1fb"/>
+    <path d="M930 234c0-5 16-5 16 0v11c0 5-16 5-16 0zm0 0c0 5 16 5 16 0m-16 6c0 5 16 5 16 0" fill="none" stroke="#315d89" stroke-width="1.7"/>
+    <text class="label" x="966" y="238">PostgreSQL</text>
+    <text class="detail" x="966" y="259">Durable source of truth</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="906" y="318" width="218" height="82" rx="16" fill="#ffffff" stroke="#ead3d3"/>
+    <circle cx="938" cy="359" r="15" fill="#fff0ee"/>
+    <path d="M929 355l9-4 9 4-9 4zm0 5l9 4 9-4m-18 5l9 4 9-4" fill="none" stroke="#a73d3d" stroke-width="1.7" stroke-linejoin="round"/>
+    <text class="label" x="966" y="358">Redis</text>
+    <text class="detail" x="966" y="379">Recoverable query cache</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="906" y="438" width="218" height="82" rx="16" fill="#ffffff" stroke="#ead9c1"/>
+    <circle cx="938" cy="479" r="15" fill="#fff5e8"/>
+    <path d="M928 477l10-6 10 6-10 6zm0 0v9l10 6 10-6v-9m-10 6v9" fill="none" stroke="#ad5a22" stroke-width="1.7" stroke-linejoin="round"/>
+    <text class="label" x="966" y="478">MinIO / AWS S3</text>
+    <text class="detail" x="966" y="499">Private invoice objects</text>
+  </g>
+
+  <!-- Call paths -->
+  <path class="edge" d="M238 306 C270 270 286 255 326 255"/>
+  <text class="edge-label" x="250" y="263">PAGES</text>
+  <path class="edge" d="M238 355 C355 355 432 357 551 357"/>
+  <text class="edge-label" x="339" y="346">JWT COOKIE + CSRF</text>
+  <path class="edge" d="M551 399 C522 418 503 438 489 451"/>
+  <text class="edge-label" x="410" y="402">INTERNAL HTTP</text>
+  <path class="edge" d="M807 323 C846 290 864 251 906 241"/>
+  <path class="edge" d="M807 359 L906 359"/>
+  <path class="edge" d="M807 397 C851 425 867 467 906 478"/>
+
+  <rect x="68" y="542" width="1056" height="1" fill="#dbe4e0"/>
+  <circle cx="83" cy="568" r="5" fill="#16735a"/>
+  <text class="detail" x="96" y="573">The browser never calls FastAPI or storage directly. Redis never holds the only copy of workflow state.</text>
+</svg>
