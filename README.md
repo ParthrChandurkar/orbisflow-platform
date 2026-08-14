@@ -42,53 +42,49 @@ Orbis Flow replaces invoice handoffs scattered across email and spreadsheets wit
 
 </details>
 
-## Key features
+<a id="features"></a>
 
-### Employee
+## ✨ Role-based experience
 
-- Upload PDF, JPG, or PNG invoices up to 10 MB with MIME, size, and file-signature validation.
-- Review OCR-extracted vendor, invoice date, total, and line-item data.
-- Correct flagged extraction data, replace a document, retry extraction, and resubmit.
-- Track only owned requests, audit history, document access, and notifications.
+### 👩‍💻 Employee
 
-### Manager
+- 📤 Upload PDF, JPG, or PNG invoices up to 10 MB with MIME, size, and file-signature validation.
+- 🔎 Review OCR-extracted vendor, invoice date, total, and line-item data.
+- ✏️ Correct flagged data, replace a document, retry extraction, and resubmit.
+- 🔐 Track only owned requests, document access, audit history, and notifications.
 
-- Review only requests routed to the assigned Manager.
-- Inspect the source document, extracted data, and audit history.
-- Approve eligible invoices or reject them with a required reason.
-- Monitor a paginated approval queue and scoped team-activity totals.
+### 👔 Manager
 
-### Finance
+- 📥 Review only requests routed to the assigned Manager.
+- 🧾 Inspect the source document, extracted data, and audit history.
+- ✅ Approve eligible invoices or reject them with a required reason.
+- 📊 Monitor a paginated approval queue and scoped team-activity totals.
 
-- Review Manager-approved invoices in the Finance queue.
-- Mark an eligible invoice as `paid` or `scheduled`.
-- View processed requests, payment details, documents, and audit history.
-- Process any eligible Finance-stage request without a per-request Finance assignment.
+### 💼 Finance
 
-Across all roles, Spring Security enforces JWT authentication, subject-bound CSRF protection, deny-by-default RBAC, ownership rules, workflow-state checks, and version-conflict handling.
+- 📋 Review Manager-approved invoices in the Finance queue.
+- 💳 Mark an eligible invoice as `paid` or `scheduled`.
+- 🔍 View processed requests, payment details, documents, and audit history.
+- 🔄 Process any eligible Finance-stage request without a per-request Finance assignment.
 
-## Architecture
+> 🛡️ Across all roles, Spring Security enforces JWT authentication, subject-bound CSRF protection, deny-by-default RBAC, ownership rules, workflow-state checks, and optimistic-lock conflicts.
 
-```text
-Browser
-  |-- pages --------------------------> Next.js
-  `-- authenticated business API ----> Spring Boot
-                                           |-- PostgreSQL
-                                           |-- Redis
-                                           |-- private S3 storage
-                                           `-- internal OCR request --> FastAPI + Tesseract
-```
+<a id="architecture"></a>
 
-Spring Boot is the sole business API and the only service allowed to access PostgreSQL, Redis, and object storage. FastAPI is isolated behind Spring Boot and cannot be called by the browser, keeping OCR concerns and storage credentials outside the client trust boundary. See the [system architecture](docs/architecture.md) for the full request, authentication, file, and consistency flows.
+## 🏗️ Architecture
 
-## Tech stack
+![Orbis Flow secure three-service architecture](docs/assets/orbis-flow-architecture.svg)
+
+Spring Boot is the sole business API and the only service allowed to access PostgreSQL, Redis, and object storage. FastAPI is isolated behind Spring Boot and cannot be called by the browser, keeping OCR concerns and storage credentials outside the client trust boundary. PostgreSQL remains the durable source of truth; Redis is never the only copy of workflow state. See the [system architecture](docs/architecture.md) for the full request, authentication, file, and consistency flows.
+
+## 🧰 Tech stack
 
 | Layer | Technologies |
 | --- | --- |
 | Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS, shadcn/ui patterns, Lucide icons |
 | Backend | Java 17, Spring Boot 3.5, Spring Security, JDBC, Flyway, JWT |
 | AI service | Python 3.11, FastAPI, Tesseract OCR via pytesseract, Pillow, pypdfium2 |
-| Data | PostgreSQL 17, Redis 7, private S3-compatible object storage |
+| Data | PostgreSQL 17, Redis 7, MinIO locally, private AWS S3 in production |
 | Delivery and QA | Docker, Docker Compose, GitHub Actions, Maven, Testcontainers, Vitest, Playwright, pytest, Ruff |
 
 ## Run locally
