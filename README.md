@@ -1,6 +1,8 @@
-# Orbis Flow
+<div align="center">
 
-**AI-assisted invoice approval workflow platform for traceable, role-based processing.**
+# 🌐 Orbis Flow
+
+### AI-assisted invoice approval, from upload to payment—with every handoff traceable.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
@@ -8,14 +10,37 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+[![CI](https://github.com/ParthrChandurkar/orbisflow-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/ParthrChandurkar/orbisflow-platform/actions/workflows/ci.yml)
 
-## Overview
+[✨ Features](#features) · [🏗️ Architecture](#architecture) · [🚀 Run locally](#run-locally) · [🧪 Testing](#testing) · [📚 Documentation](#documentation)
 
-Orbis Flow replaces email, spreadsheets, and repeated invoice data entry with one accountable workflow for Employees, Managers, and Finance teams. An Employee uploads an invoice, the OCR service extracts and validates its fields, the assigned Manager approves or rejects it, and Finance records the payment as paid or scheduled. Role-scoped dashboards, in-app notifications, optimistic locking, and an append-only audit trail keep each handoff visible and controlled. The MVP deliberately implements one fixed workflow well rather than a configurable process engine.
+</div>
 
-> **Project status:** The three-role backend and frontend are implemented and tested, and the complete stack runs locally with Docker Compose. AWS production deployment is pending free-tier availability. **Live demo: coming soon after AWS deployment.**
+## 💡 What it solves
 
-**Known dependency issue:** `npm audit` currently reports three high-severity advisories in Next.js 16.2.11's bundled PostCSS/sharp dependencies. The available automated fix is a breaking downgrade, so this is being monitored for an upstream-compatible release.
+Orbis Flow replaces invoice handoffs scattered across email and spreadsheets with one accountable workflow for Employees, Managers, and Finance teams. It extracts invoice data with OCR, routes valid submissions to the assigned Manager, moves approvals to Finance, and records every material action in an audit trail.
+
+> 📄 **Employee uploads** → 🤖 **AI extracts & validates** → 👔 **Manager decides** → 💳 **Finance processes** → 🧾 **Audit trail records**
+
+| 3 fixed roles | 1 governed workflow | 3 application services | Zero external local credentials |
+| :---: | :---: | :---: | :---: |
+| Employee · Manager · Finance | Deliberate MVP scope | Next.js · Spring Boot · FastAPI | Docker Compose + MinIO |
+
+## 🚦 Project status
+
+| Area | Current state |
+| --- | --- |
+| ✅ Product | Full three-role backend and frontend implemented and tested |
+| 🐳 Local runtime | Complete workflow runs through Docker Compose, including local object storage |
+| ☁️ Production | AWS deployment pending free-tier availability |
+| 🌍 Live demo | Coming after AWS deployment—no placeholder or inactive demo link |
+
+<details>
+<summary>⚠️ Known dependency advisory</summary>
+
+`npm audit` currently reports three high-severity advisories in Next.js 16.2.11's bundled PostCSS/sharp dependencies. The automated fix is a breaking downgrade, so the project is monitoring for an upstream-compatible release.
+
+</details>
 
 ## Key features
 
