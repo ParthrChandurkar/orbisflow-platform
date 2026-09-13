@@ -226,6 +226,20 @@ The complete design trail is available in [`docs/`](docs/), including:
 - [Frontend and navigation design](docs/frontend.md)
 - [Repository structure](docs/folder-structure.md)
 
+### 🧭 Repository map
+
+```text
+orbisflow-platform/
+├── frontend/              Next.js App Router UI, shared components, Vitest and Playwright
+├── backend/               Feature-first Spring Boot API, Flyway migrations and integration tests
+├── ai-service/            FastAPI OCR/extraction engine and pytest suite
+├── docs/                  Product, architecture, RBAC, schema, API and UX design evidence
+├── .github/workflows/     Three-job CI pipeline
+└── docker-compose.yml     Complete local stack, including PostgreSQL, Redis and MinIO
+```
+
+For a fast technical review, start with the [PRD](docs/PRD.md), inspect the [architecture](docs/architecture.md) and [RBAC matrix](docs/rbac.md), then follow an endpoint from the [API contract](docs/backend-api.md) into its feature-first backend module and integration test.
+
 ## 🗺️ Roadmap
 
 - Deploy the existing containers and managed data services to AWS when the required free-tier capacity is available.
