@@ -4,7 +4,7 @@
 
 ### AI-assisted invoice approval, from upload to payment—with every handoff traceable.
 
-[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.3-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![FastAPI](https://img.shields.io/badge/FastAPI-OCR-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
@@ -12,7 +12,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![CI](https://github.com/ParthrChandurkar/orbisflow-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/ParthrChandurkar/orbisflow-platform/actions/workflows/ci.yml)
 
-[✨ Features](#features) · [🏗️ Architecture](#architecture) · [🚀 Run locally](#run-locally) · [🧪 Testing](#testing) · [📚 Documentation](#documentation)
+[🎯 Highlights](#highlights) · [✨ Features](#features) · [🏗️ Architecture](#architecture) · [🚀 Run locally](#run-locally) · [🧪 Testing](#testing) · [📚 Documentation](#documentation)
 
 </div>
 
@@ -35,12 +35,14 @@ Orbis Flow replaces invoice handoffs scattered across email and spreadsheets wit
 | ☁️ Production | AWS deployment pending free-tier availability |
 | 🌍 Live demo | Coming after AWS deployment—no placeholder or inactive demo link |
 
-<details>
-<summary>⚠️ Known dependency advisory</summary>
+<a id="highlights"></a>
 
-`npm audit` currently reports three high-severity advisories in Next.js 16.2.11's bundled PostCSS/sharp dependencies. The automated fix is a breaking downgrade, so the project is monitoring for an upstream-compatible release.
+## 🎯 Why this project stands out
 
-</details>
+- **End-to-end ownership:** product requirements, user stories, RBAC, architecture, schema, API contract, implementation, tests, and UX were designed as one coherent system.
+- **Business-first automation:** OCR reduces manual entry, while deterministic validation and a fixed state machine keep approval decisions explainable.
+- **Security by construction:** private document storage, short-lived access links, server-side authorization, CSRF protection, immutable audit history, and least-privilege database grants are built into the design.
+- **Production-minded delivery:** reproducible local infrastructure, versioned migrations, optimistic concurrency, correlation IDs, health checks, and three independent CI jobs support confident change.
 
 <a id="features"></a>
 
