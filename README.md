@@ -12,7 +12,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![CI](https://github.com/ParthrChandurkar/orbisflow-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/ParthrChandurkar/orbisflow-platform/actions/workflows/ci.yml)
 
-[🎯 Highlights](#highlights) · [✨ Features](#features) · [🏗️ Architecture](#architecture) · [🚀 Run locally](#run-locally) · [🧪 Testing](#testing) · [📚 Documentation](#documentation)
+[🎯 Highlights](#highlights) · [✨ Features](#features) · [🏗️ Architecture](#architecture) · [🛡️ Engineering](#engineering) · [🚀 Run locally](#run-locally) · [🧪 Testing](#testing) · [📚 Documentation](#documentation)
 
 </div>
 
@@ -88,6 +88,20 @@ Spring Boot is the sole business API and the only service allowed to access Post
 | AI service | Python 3.11, FastAPI, Tesseract OCR via pytesseract, Pillow, pypdfium2 |
 | Data | PostgreSQL 17, Redis 7, MinIO locally, private AWS S3 in production |
 | Delivery and QA | Docker, Docker Compose, GitHub Actions, Maven, Testcontainers, Vitest, Playwright, pytest, Ruff |
+
+<a id="engineering"></a>
+
+## 🛡️ Engineering decisions
+
+| Concern | Implemented decision | Why it matters |
+| --- | --- | --- |
+| Authorization | Spring validates JWT role, resource scope, and workflow state on every protected action | UI visibility is never treated as access control |
+| CSRF | HMAC-signed, subject-bound double-submit token on state-changing requests | Automatically attached auth cookies cannot authorize forged mutations alone |
+| Documents | Private object storage with non-guessable keys and 60-second application access links | The browser receives no database or storage credentials |
+| Extraction | Browser-asynchronous workflow with one bounded Spring-to-FastAPI attempt | Slow OCR cannot duplicate uploads or corrupt request state |
+| Consistency | PostgreSQL transactions plus optimistic version checks | Duplicate and stale approval/payment actions fail predictably |
+| Auditability | Append-only audit events and a database role without update/delete privileges | Historical workflow evidence remains independent of the current request row |
+| Caching | Redis stores recoverable, scoped dashboard results only | Workflow truth remains durable in PostgreSQL |
 
 <a id="run-locally"></a>
 
