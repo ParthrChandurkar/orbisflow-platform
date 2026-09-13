@@ -72,7 +72,7 @@ class ExtractionIntegrationTest {
     @Container
     static final GenericContainer<?> MINIO =
             new GenericContainer<>(DockerImageName.parse(
-                    "minio/minio:RELEASE.2024-01-18T22-51-28Z"))
+                    "quay.io/minio/minio:RELEASE.2024-01-18T22-51-28Z"))
                     .withEnv("MINIO_ROOT_USER", MINIO_ACCESS_KEY)
                     .withEnv("MINIO_ROOT_PASSWORD", MINIO_SECRET_KEY)
                     .withCommand("server", "/data")
