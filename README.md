@@ -20,7 +20,7 @@
 
 Orbis Flow replaces invoice handoffs scattered across email and spreadsheets with one accountable workflow for Employees, Managers, and Finance teams. It extracts invoice data with OCR, routes valid submissions to the assigned Manager, moves approvals to Finance, and records every material action in an audit trail.
 
-> 📄 **Employee uploads** → 🤖 **AI extracts & validates** → 👔 **Manager decides** → 💳 **Finance processes** → 🧾 **Audit trail records**
+![Employee upload through AI extraction, Manager decision, Finance processing, and audit trace](docs/assets/orbis-flow-workflow.svg)
 
 | 3 fixed roles | 1 governed workflow | 3 application services | Zero external local credentials |
 | :---: | :---: | :---: | :---: |
