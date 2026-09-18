@@ -4,7 +4,7 @@
 
 ### AI-assisted invoice approval, from upload to payment—with every handoff traceable.
 
-[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.3-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![FastAPI](https://img.shields.io/badge/FastAPI-OCR-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
@@ -12,7 +12,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![CI](https://github.com/ParthrChandurkar/orbisflow-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/ParthrChandurkar/orbisflow-platform/actions/workflows/ci.yml)
 
-[✨ Features](#features) · [🏗️ Architecture](#architecture) · [🚀 Run locally](#run-locally) · [🧪 Testing](#testing) · [📚 Documentation](#documentation)
+[🎯 Highlights](#highlights) · [✨ Features](#features) · [🏗️ Architecture](#architecture) · [🛡️ Engineering](#engineering) · [🚀 Run locally](#run-locally) · [🧪 Testing](#testing) · [📚 Documentation](#documentation)
 
 </div>
 
@@ -20,7 +20,7 @@
 
 Orbis Flow replaces invoice handoffs scattered across email and spreadsheets with one accountable workflow for Employees, Managers, and Finance teams. It extracts invoice data with OCR, routes valid submissions to the assigned Manager, moves approvals to Finance, and records every material action in an audit trail.
 
-> 📄 **Employee uploads** → 🤖 **AI extracts & validates** → 👔 **Manager decides** → 💳 **Finance processes** → 🧾 **Audit trail records**
+![Employee upload through AI extraction, Manager decision, Finance processing, and audit trace](docs/assets/orbis-flow-workflow.svg)
 
 | 3 fixed roles | 1 governed workflow | 3 application services | Zero external local credentials |
 | :---: | :---: | :---: | :---: |
@@ -35,12 +35,14 @@ Orbis Flow replaces invoice handoffs scattered across email and spreadsheets wit
 | ☁️ Production | AWS deployment pending free-tier availability |
 | 🌍 Live demo | Coming after AWS deployment—no placeholder or inactive demo link |
 
-<details>
-<summary>⚠️ Known dependency advisory</summary>
+<a id="highlights"></a>
 
-`npm audit` currently reports three high-severity advisories in Next.js 16.2.11's bundled PostCSS/sharp dependencies. The automated fix is a breaking downgrade, so the project is monitoring for an upstream-compatible release.
+## 🎯 Why this project stands out
 
-</details>
+- **End-to-end ownership:** product requirements, user stories, RBAC, architecture, schema, API contract, implementation, tests, and UX were designed as one coherent system.
+- **Business-first automation:** OCR reduces manual entry, while deterministic validation and a fixed state machine keep approval decisions explainable.
+- **Security by construction:** private document storage, short-lived access links, server-side authorization, CSRF protection, immutable audit history, and least-privilege database grants are built into the design.
+- **Production-minded delivery:** reproducible local infrastructure, versioned migrations, optimistic concurrency, correlation IDs, health checks, and three independent CI jobs support confident change.
 
 <a id="features"></a>
 
@@ -86,6 +88,20 @@ Spring Boot is the sole business API and the only service allowed to access Post
 | AI service | Python 3.11, FastAPI, Tesseract OCR via pytesseract, Pillow, pypdfium2 |
 | Data | PostgreSQL 17, Redis 7, MinIO locally, private AWS S3 in production |
 | Delivery and QA | Docker, Docker Compose, GitHub Actions, Maven, Testcontainers, Vitest, Playwright, pytest, Ruff |
+
+<a id="engineering"></a>
+
+## 🛡️ Engineering decisions
+
+| Concern | Implemented decision | Why it matters |
+| --- | --- | --- |
+| Authorization | Spring validates JWT role, resource scope, and workflow state on every protected action | UI visibility is never treated as access control |
+| CSRF | HMAC-signed, subject-bound double-submit token on state-changing requests | Automatically attached auth cookies cannot authorize forged mutations alone |
+| Documents | Private object storage with non-guessable keys and 60-second application access links | The browser receives no database or storage credentials |
+| Extraction | Browser-asynchronous workflow with one bounded Spring-to-FastAPI attempt | Slow OCR cannot duplicate uploads or corrupt request state |
+| Consistency | PostgreSQL transactions plus optimistic version checks | Duplicate and stale approval/payment actions fail predictably |
+| Auditability | Append-only audit events and a database role without update/delete privileges | Historical workflow evidence remains independent of the current request row |
+| Caching | Redis stores recoverable, scoped dashboard results only | Workflow truth remains durable in PostgreSQL |
 
 <a id="run-locally"></a>
 
@@ -209,6 +225,20 @@ The complete design trail is available in [`docs/`](docs/), including:
 - [Backend API contract](docs/backend-api.md)
 - [Frontend and navigation design](docs/frontend.md)
 - [Repository structure](docs/folder-structure.md)
+
+### 🧭 Repository map
+
+```text
+orbisflow-platform/
+├── frontend/              Next.js App Router UI, shared components, Vitest and Playwright
+├── backend/               Feature-first Spring Boot API, Flyway migrations and integration tests
+├── ai-service/            FastAPI OCR/extraction engine and pytest suite
+├── docs/                  Product, architecture, RBAC, schema, API and UX design evidence
+├── .github/workflows/     Three-job CI pipeline
+└── docker-compose.yml     Complete local stack, including PostgreSQL, Redis and MinIO
+```
+
+For a fast technical review, start with the [PRD](docs/PRD.md), inspect the [architecture](docs/architecture.md) and [RBAC matrix](docs/rbac.md), then follow an endpoint from the [API contract](docs/backend-api.md) into its feature-first backend module and integration test.
 
 ## 🗺️ Roadmap
 

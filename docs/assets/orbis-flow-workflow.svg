@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-labelledby="workflow-title workflow-desc">
+  <title id="workflow-title">Orbis Flow invoice workflow</title>
+  <desc id="workflow-desc">An Employee uploads an invoice, AI extracts and validates it, a Manager approves or rejects it, Finance records payment processing, and every step is appended to the audit trail.</desc>
+  <defs>
+    <linearGradient id="workflow-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fbfa"/>
+      <stop offset="1" stop-color="#eef4f1"/>
+    </linearGradient>
+    <filter id="workflow-shadow" x="-20%" y="-30%" width="140%" height="170%">
+      <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#10211b" flood-opacity=".1"/>
+    </filter>
+    <marker id="workflow-arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0 0L9 4.5 0 9z" fill="#82928c"/>
+    </marker>
+    <style>
+      .step { font: 700 16px Inter, ui-sans-serif, system-ui, sans-serif; fill: #17221f; }
+      .copy { font: 400 12px Inter, ui-sans-serif, system-ui, sans-serif; fill: #61706a; }
+      .number { font: 700 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #ffffff; }
+      .arrow { stroke: #82928c; stroke-width: 2; fill: none; marker-end: url(#workflow-arrow); }
+    </style>
+  </defs>
+  <rect width="1200" height="260" rx="24" fill="url(#workflow-bg)"/>
+  <text x="44" y="44" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="700" fill="#16735a" letter-spacing=".08em">ONE GOVERNED WORKFLOW</text>
+
+  <path class="arrow" d="M230 135h40"/>
+  <path class="arrow" d="M458 135h40"/>
+  <path class="arrow" d="M686 135h40"/>
+  <path class="arrow" d="M914 135h40"/>
+
+  <g filter="url(#workflow-shadow)">
+    <rect x="42" y="76" width="188" height="120" rx="18" fill="#ffffff" stroke="#bcd6cb"/>
+    <circle cx="72" cy="106" r="17" fill="#16735a"/><text class="number" x="68" y="111">1</text>
+    <text class="step" x="98" y="111">Upload</text>
+    <text class="copy" x="64" y="147">Employee submits a</text>
+    <text class="copy" x="64" y="166">PDF, JPG, or PNG invoice</text>
+  </g>
+
+  <g filter="url(#workflow-shadow)">
+    <rect x="270" y="76" width="188" height="120" rx="18" fill="#ffffff" stroke="#8ac8b7"/>
+    <circle cx="300" cy="106" r="17" fill="#009688"/><text class="number" x="296" y="111">2</text>
+    <text class="step" x="326" y="111">Extract</text>
+    <text class="copy" x="292" y="147">OCR reads fields and</text>
+    <text class="copy" x="292" y="166">validation applies rules</text>
+  </g>
+
+  <g filter="url(#workflow-shadow)">
+    <rect x="498" y="76" width="188" height="120" rx="18" fill="#ffffff" stroke="#c9c9ee"/>
+    <circle cx="528" cy="106" r="17" fill="#5a5fc2"/><text class="number" x="524" y="111">3</text>
+    <text class="step" x="554" y="111">Decide</text>
+    <text class="copy" x="520" y="147">Assigned Manager</text>
+    <text class="copy" x="520" y="166">approves or rejects</text>
+  </g>
+
+  <g filter="url(#workflow-shadow)">
+    <rect x="726" y="76" width="188" height="120" rx="18" fill="#ffffff" stroke="#e5c9b6"/>
+    <circle cx="756" cy="106" r="17" fill="#ad5a22"/><text class="number" x="752" y="111">4</text>
+    <text class="step" x="782" y="111">Process</text>
+    <text class="copy" x="748" y="147">Finance records paid</text>
+    <text class="copy" x="748" y="166">or scheduled status</text>
+  </g>
+
+  <g filter="url(#workflow-shadow)">
+    <rect x="954" y="76" width="204" height="120" rx="18" fill="#ffffff" stroke="#d7dfe8"/>
+    <circle cx="984" cy="106" r="17" fill="#315d89"/><text class="number" x="980" y="111">5</text>
+    <text class="step" x="1010" y="111">Trace</text>
+    <text class="copy" x="976" y="147">Audit events and role</text>
+    <text class="copy" x="976" y="166">dashboards stay current</text>
+  </g>
+
+  <text x="44" y="229" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#61706a">Incomplete extraction returns to the Employee • rejection stops Finance routing • all transitions are server-enforced</text>
+</svg>
