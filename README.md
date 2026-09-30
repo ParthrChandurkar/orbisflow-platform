@@ -1,255 +1,90 @@
-<div align="center">
+# Orbis Flow
 
-# 🌐 Orbis Flow
+Orbis Flow is an invoice approval application for employees, managers, and finance teams. It extracts invoice fields with OCR, applies a controlled approval workflow, stores documents in object storage, and records material actions in an append-only audit trail.
 
-### AI-assisted invoice approval, from upload to payment—with every handoff traceable.
+## Features
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.3-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![FastAPI](https://img.shields.io/badge/FastAPI-OCR-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://redis.io/)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
-[![CI](https://github.com/ParthrChandurkar/orbisflow-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/ParthrChandurkar/orbisflow-platform/actions/workflows/ci.yml)
+- PDF, JPG, and PNG invoice upload with file validation
+- Tesseract-based extraction of invoice fields and line items
+- Employee correction and resubmission workflow
+- Manager review and finance processing queues
+- JWT authentication, role-based access control, and CSRF protection
+- Optimistic locking for concurrent workflow updates
+- Append-only audit and notification records
+- Short-lived, authorized document access links
 
-[🎯 Highlights](#highlights) · [✨ Features](#features) · [🏗️ Architecture](#architecture) · [🛡️ Engineering](#engineering) · [🚀 Run locally](#run-locally) · [🧪 Testing](#testing) · [📚 Documentation](#documentation)
+## Architecture
 
-</div>
+The Next.js browser client calls the Spring Boot API, which owns authentication, authorization, workflow state, persistence, and document access. Spring Boot delegates OCR to an internal FastAPI service. PostgreSQL is the durable system of record, Redis supports transient application concerns, and MinIO provides S3-compatible storage for local development.
 
-## 💡 What it solves
+The browser does not call the OCR service or object store directly. See [`docs/architecture.md`](docs/architecture.md) for request, security, storage, and consistency flows.
 
-Orbis Flow replaces invoice handoffs scattered across email and spreadsheets with one accountable workflow for Employees, Managers, and Finance teams. It extracts invoice data with OCR, routes valid submissions to the assigned Manager, moves approvals to Finance, and records every material action in an audit trail.
-
-![Employee upload through AI extraction, Manager decision, Finance processing, and audit trace](docs/assets/orbis-flow-workflow.svg)
-
-| 3 fixed roles | 1 governed workflow | 3 application services | Zero external local credentials |
-| :---: | :---: | :---: | :---: |
-| Employee · Manager · Finance | Deliberate MVP scope | Next.js · Spring Boot · FastAPI | Docker Compose + MinIO |
-
-## 🚦 Project status
-
-| Area | Current state |
-| --- | --- |
-| ✅ Product | Full three-role backend and frontend implemented and tested |
-| 🐳 Local runtime | Complete workflow runs through Docker Compose, including local object storage |
-| ☁️ Production | AWS deployment pending free-tier availability |
-| 🌍 Live demo | Coming after AWS deployment—no placeholder or inactive demo link |
-
-<a id="highlights"></a>
-
-## 🎯 Why this project stands out
-
-- **End-to-end ownership:** product requirements, user stories, RBAC, architecture, schema, API contract, implementation, tests, and UX were designed as one coherent system.
-- **Business-first automation:** OCR reduces manual entry, while deterministic validation and a fixed state machine keep approval decisions explainable.
-- **Security by construction:** private document storage, short-lived access links, server-side authorization, CSRF protection, immutable audit history, and least-privilege database grants are built into the design.
-- **Production-minded delivery:** reproducible local infrastructure, versioned migrations, optimistic concurrency, correlation IDs, health checks, and three independent CI jobs support confident change.
-
-<a id="features"></a>
-
-## ✨ Role-based experience
-
-### 👩‍💻 Employee
-
-- 📤 Upload PDF, JPG, or PNG invoices up to 10 MB with MIME, size, and file-signature validation.
-- 🔎 Review OCR-extracted vendor, invoice date, total, and line-item data.
-- ✏️ Correct flagged data, replace a document, retry extraction, and resubmit.
-- 🔐 Track only owned requests, document access, audit history, and notifications.
-
-### 👔 Manager
-
-- 📥 Review only requests routed to the assigned Manager.
-- 🧾 Inspect the source document, extracted data, and audit history.
-- ✅ Approve eligible invoices or reject them with a required reason.
-- 📊 Monitor a paginated approval queue and scoped team-activity totals.
-
-### 💼 Finance
-
-- 📋 Review Manager-approved invoices in the Finance queue.
-- 💳 Mark an eligible invoice as `paid` or `scheduled`.
-- 🔍 View processed requests, payment details, documents, and audit history.
-- 🔄 Process any eligible Finance-stage request without a per-request Finance assignment.
-
-> 🛡️ Across all roles, Spring Security enforces JWT authentication, subject-bound CSRF protection, deny-by-default RBAC, ownership rules, workflow-state checks, and optimistic-lock conflicts.
-
-<a id="architecture"></a>
-
-## 🏗️ Architecture
-
-![Orbis Flow secure three-service architecture](docs/assets/orbis-flow-architecture.svg)
-
-Spring Boot is the sole business API and the only service allowed to access PostgreSQL, Redis, and object storage. FastAPI is isolated behind Spring Boot and cannot be called by the browser, keeping OCR concerns and storage credentials outside the client trust boundary. PostgreSQL remains the durable source of truth; Redis is never the only copy of workflow state. See the [system architecture](docs/architecture.md) for the full request, authentication, file, and consistency flows.
-
-## 🧰 Tech stack
+## Tech Stack
 
 | Layer | Technologies |
 | --- | --- |
-| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS, shadcn/ui patterns, Lucide icons |
-| Backend | Java 17, Spring Boot 3.5, Spring Security, JDBC, Flyway, JWT |
-| AI service | Python 3.11, FastAPI, Tesseract OCR via pytesseract, Pillow, pypdfium2 |
-| Data | PostgreSQL 17, Redis 7, MinIO locally, private AWS S3 in production |
-| Delivery and QA | Docker, Docker Compose, GitHub Actions, Maven, Testcontainers, Vitest, Playwright, pytest, Ruff |
+| Frontend | Next.js, React, TypeScript, Tailwind CSS |
+| Business API | Java 17, Spring Boot, Spring Security, JDBC, Flyway |
+| OCR service | Python 3.11, FastAPI, Tesseract, Pillow, pypdfium2 |
+| Data | PostgreSQL, Redis, MinIO locally, S3-compatible object storage |
+| Delivery and testing | Docker Compose, GitHub Actions, Maven, Testcontainers, pytest, Vitest, Playwright |
 
-<a id="engineering"></a>
+## Getting Started
 
-## 🛡️ Engineering decisions
+Prerequisites: Git and Docker with the Compose plugin. The full stack uses ports `3000`, `5432`, `6379`, `8000`, `8080`, `9000`, and `9001` by default.
 
-| Concern | Implemented decision | Why it matters |
-| --- | --- | --- |
-| Authorization | Spring validates JWT role, resource scope, and workflow state on every protected action | UI visibility is never treated as access control |
-| CSRF | HMAC-signed, subject-bound double-submit token on state-changing requests | Automatically attached auth cookies cannot authorize forged mutations alone |
-| Documents | Private object storage with non-guessable keys and 60-second application access links | The browser receives no database or storage credentials |
-| Extraction | Browser-asynchronous workflow with one bounded Spring-to-FastAPI attempt | Slow OCR cannot duplicate uploads or corrupt request state |
-| Consistency | PostgreSQL transactions plus optimistic version checks | Duplicate and stale approval/payment actions fail predictably |
-| Auditability | Append-only audit events and a database role without update/delete privileges | Historical workflow evidence remains independent of the current request row |
-| Caching | Redis stores recoverable, scoped dashboard results only | Workflow truth remains durable in PostgreSQL |
-
-<a id="run-locally"></a>
-
-## 🚀 Run locally
-
-### ✅ Prerequisites
-
-- [Git](https://git-scm.com/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine with the Compose plugin
-- At least 6 GB of memory available to Docker for parallel image builds and OCR
-- Ports 3000, 5432, 6379, 8000, 8080, 9000, and 9001 available locally
-
-### 1️⃣ Clone and configure
-
-```sh
-git clone https://github.com/ParthrChandurkar/orbisflow-platform.git
-cd orbisflow-platform
-cp .env.example .env
-```
-
-On Windows PowerShell, replace the last command with:
+Copy the development configuration:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-No external credentials are required. The copied defaults use a local MinIO container, create a private `orbisflow-invoices` bucket automatically, and use non-production development credentials. The Compose stack reads the root `.env`; service-level `.env.example` files are templates for running services outside Compose. Do not commit populated `.env` files.
+Build and start all services:
 
-### 2️⃣ Build and start
-
-```sh
+```bash
 docker compose up --build -d
 docker compose ps
 ```
 
-### 3️⃣ Open the app
+Open `http://localhost:3000`. Supporting endpoints include:
 
-Open **[http://localhost:3000](http://localhost:3000)**. Health endpoints are available at:
+- Spring Boot health: `http://localhost:8080/api/v1/health`
+- FastAPI health: `http://localhost:8000/internal/v1/health`
+- MinIO console: `http://localhost:9001`
 
-- Spring Boot: [http://localhost:8080/api/v1/health](http://localhost:8080/api/v1/health)
-- FastAPI: [http://localhost:8000/internal/v1/health](http://localhost:8000/internal/v1/health)
-- MinIO console: [http://localhost:9001](http://localhost:9001)
+Flyway applies the database migrations and creates local fixture accounts. Development credentials are defined in the seed migration and must not be reused in a deployed environment.
 
-Flyway creates the schema and seed accounts on the first clean start. Test usernames and the shared local-only test password are documented in [`V2__seed_test_users.sql`](backend/src/main/resources/db/migration/V2__seed_test_users.sql); use an `employee*`, `manager*`, or `finance*` account for the corresponding workspace. These credentials are development fixtures and must not be used in a deployed environment.
+Stop the stack with:
 
-Production deployment replaces the local MinIO endpoint and development credentials with a private AWS S3 bucket and credentials supplied entirely through environment variables; application code does not change.
-
-View logs or stop and remove the containers with:
-
-```sh
-docker compose logs -f
+```bash
 docker compose down
 ```
 
-Use `docker compose down -v` only when you intentionally want to delete local PostgreSQL, Redis, and MinIO data and re-run all migrations from a clean database.
+## Configuration
 
-## 🖼️ Product tour
+The root `.env.example` documents database, JWT, CSRF, Redis, service-port, and S3-compatible storage settings. Service-specific examples are available under `backend/`, `ai-service/`, and `frontend/`. Replace all development secrets and storage credentials before any hosted deployment.
 
-<table>
-  <tr>
-    <td width="50%" align="center">
-      <strong>👩‍💻 Employee dashboard</strong><br><br>
-      <img src="docs/evidence/stage-21/02-employee-populated.png" alt="Employee dashboard showing populated invoice requests">
-    </td>
-    <td width="50%" align="center">
-      <strong>🔎 Invoice detail</strong><br><br>
-      <img src="docs/evidence/stage-21/03-request-detail.png" alt="Request detail showing extracted invoice data and audit history">
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" align="center">
-      <strong>👔 Manager queue</strong><br><br>
-      <img src="docs/evidence/stage-21/04-manager-queue.png" alt="Manager approval queue and team activity">
-    </td>
-    <td width="50%" align="center">
-      <strong>💼 Finance queue</strong><br><br>
-      <img src="docs/evidence/stage-21/05-finance-queue.png" alt="Finance processing queue">
-    </td>
-  </tr>
-</table>
+## Testing
 
-<a id="testing"></a>
-
-## 🧪 Testing
-
-The repository includes:
-
-- Spring Boot integration tests using JUnit, MockMvc, real PostgreSQL through Testcontainers, and real OCR-service containers for extraction paths.
-- FastAPI unit and API tests using pytest, plus Ruff and Python bytecode checks in CI.
-- Frontend unit tests using Vitest and browser-level, three-role workflow coverage using Playwright.
-- GitHub Actions jobs that lint/build the frontend, run the Maven verification suite, and validate the AI service on every pull request to `main`.
-
-```sh
-# Backend integration suite (Docker required for Testcontainers)
+```bash
 cd backend
 mvn verify
-cd ..
 
-# AI service
-cd ai-service
+cd ../ai-service
 python -m pytest -q
-cd ..
 
-# Frontend unit and browser suites
-cd frontend
+cd ../frontend
 npm test
 npm run test:e2e
 ```
 
-<a id="documentation"></a>
+Backend integration tests require Docker because they use Testcontainers and an OCR service image. GitHub Actions separately verifies the frontend, backend, and OCR service.
 
-## 📚 Design documentation
+## Project Status and Limitations
 
-The complete design trail is available in [`docs/`](docs/), including:
+- Docker Compose provides the verified local workflow, including MinIO-based object storage.
+- AWS-oriented S3 configuration is present, but this repository does not contain infrastructure-as-code for a complete AWS deployment.
+- OCR output requires user review and correction.
+- Local development credentials are fixtures, not production secrets.
 
-- [Product requirements](docs/PRD.md)
-- [System architecture](docs/architecture.md)
-- [RBAC permission model](docs/rbac.md)
-- [User stories and traceability](docs/user-stories.md)
-- [Database schema](docs/db-schema.md)
-- [Backend API contract](docs/backend-api.md)
-- [Frontend and navigation design](docs/frontend.md)
-- [Repository structure](docs/folder-structure.md)
 
-### 🧭 Repository map
-
-```text
-orbisflow-platform/
-├── frontend/              Next.js App Router UI, shared components, Vitest and Playwright
-├── backend/               Feature-first Spring Boot API, Flyway migrations and integration tests
-├── ai-service/            FastAPI OCR/extraction engine and pytest suite
-├── docs/                  Product, architecture, RBAC, schema, API and UX design evidence
-├── .github/workflows/     Three-job CI pipeline
-└── docker-compose.yml     Complete local stack, including PostgreSQL, Redis and MinIO
-```
-
-For a fast technical review, start with the [PRD](docs/PRD.md), inspect the [architecture](docs/architecture.md) and [RBAC matrix](docs/rbac.md), then follow an endpoint from the [API contract](docs/backend-api.md) into its feature-first backend module and integration test.
-
-## 🗺️ Roadmap
-
-- Deploy the existing containers and managed data services to AWS when the required free-tier capacity is available.
-- Add deployment automation and production observability around the current three-service architecture.
-- Re-evaluate deliberately deferred capabilities after MVP validation: OAuth/enterprise SSO, configurable workflows, real-time notifications, and RAG or natural-language search.
-
-## 📄 License
-
-No open-source license is currently included. The repository is available for portfolio review; all rights are reserved unless a license is added later.
-
-## 👤 Author
-
-**Parth Chandurkar** — [GitHub](https://github.com/ParthrChandurkar)
