@@ -96,56 +96,88 @@ PostgreSQL is the durable source of truth. Redis contains only recoverable, scop
 | Auditability | Append-only events and a database role without update/delete privileges | Current state cannot erase historical workflow evidence |
 | OCR failure | Bounded internal call, persisted failure state, and explicit retry | A slow or failed extraction cannot duplicate the upload or corrupt workflow state |
 
-## Getting Started
+## 🚀 Run locally
 
-Prerequisites: Git and Docker with the Compose plugin. The full stack uses ports `3000`, `5432`, `6379`, `8000`, `8080`, `9000`, and `9001` by default.
+### Prerequisites
 
-Copy the development configuration:
+- [Git](https://git-scm.com/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine with the Compose plugin
+- At least 6 GB of memory available to Docker for parallel image builds and OCR
+- Ports `3000`, `5432`, `6379`, `8000`, `8080`, `9000`, and `9001` available
+
+### 1. Clone and configure
+
+```sh
+git clone https://github.com/ParthrChandurkar/orbisflow-platform.git
+cd orbisflow-platform
+cp .env.example .env
+```
+
+On Windows PowerShell, replace the last command with:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Build and start all services:
+No AWS account or external credentials are required. These defaults start a private MinIO bucket locally; populated `.env` files must never be committed.
 
-```bash
+### 2. Build and start
+
+```sh
 docker compose up --build -d
 docker compose ps
 ```
 
-Open `http://localhost:3000`. Supporting endpoints include:
+### 3. Open and sign in
 
-- Spring Boot health: `http://localhost:8080/api/v1/health`
-- FastAPI health: `http://localhost:8000/internal/v1/health`
-- MinIO console: `http://localhost:9001`
+Open **[http://localhost:3000](http://localhost:3000)**. Supporting endpoints are:
 
-Flyway applies the database migrations and creates local fixture accounts. Development credentials are defined in the seed migration and must not be reused in a deployed environment.
+- Spring Boot health: [http://localhost:8080/api/v1/health](http://localhost:8080/api/v1/health)
+- FastAPI health: [http://localhost:8000/internal/v1/health](http://localhost:8000/internal/v1/health)
+- MinIO console: [http://localhost:9001](http://localhost:9001)
 
-Stop the stack with:
+Flyway creates the schema and local fixture accounts on the first clean start. The available `employee*`, `manager*`, and `finance*` usernames and shared development-only password are documented in [`V2__seed_test_users.sql`](backend/src/main/resources/db/migration/V2__seed_test_users.sql). Never reuse these credentials in a hosted environment.
 
-```bash
+View logs or stop the stack with:
+
+```sh
+docker compose logs -f
 docker compose down
 ```
 
-## Configuration
+Use `docker compose down -v` only when you intentionally want to delete all local PostgreSQL, Redis, and MinIO data and rerun migrations from a clean state.
 
-The root `.env.example` documents database, JWT, CSRF, Redis, service-port, and S3-compatible storage settings. Service-specific examples are available under `backend/`, `ai-service/`, and `frontend/`. Replace all development secrets and storage credentials before any hosted deployment.
+### Production configuration
 
-## Testing
+The root [`.env.example`](.env.example) documents database, JWT, CSRF, service-port, Redis, and S3-compatible storage settings. A production deployment replaces the MinIO endpoint and development credentials with a private AWS S3 bucket and environment-provided secrets; application code does not change.
 
-```bash
+## 🧪 Testing
+
+Run each suite from the repository root after installing its toolchain dependencies:
+
+```sh
+# Backend integration suite (Docker required for Testcontainers)
 cd backend
 mvn verify
+cd ..
 
-cd ../ai-service
+# AI service
+cd ai-service
+python -m pip install -e ".[dev]"
 python -m pytest -q
+python -m ruff check .
+cd ..
 
-cd ../frontend
+# Frontend lint, unit, build, and browser suites
+cd frontend
+npm ci
+npm run lint
 npm test
+npm run build
 npm run test:e2e
 ```
 
-Backend integration tests require Docker because they use Testcontainers and an OCR service image. GitHub Actions separately verifies the frontend, backend, and OCR service.
+The backend suite uses real PostgreSQL through Testcontainers and launches the OCR-service image for extraction paths. GitHub Actions independently verifies the frontend, backend, and AI service on pushes and pull requests to `main`.
 
 ## Project Status and Limitations
 
