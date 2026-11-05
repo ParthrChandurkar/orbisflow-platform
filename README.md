@@ -58,21 +58,43 @@ Orbis Flow replaces invoice handoffs scattered across email and spreadsheets wit
 - View processed requests, payment details, documents, and audit history.
 - Process any eligible Finance-stage request without a per-request Finance assignment.
 
-## Architecture
+## 🏗️ Architecture
 
-The Next.js browser client calls the Spring Boot API, which owns authentication, authorization, workflow state, persistence, and document access. Spring Boot delegates OCR to an internal FastAPI service. PostgreSQL is the durable system of record, Redis supports transient application concerns, and MinIO provides S3-compatible storage for local development.
+![Orbis Flow secure three-service architecture](docs/assets/orbis-flow-architecture.svg)
 
-The browser does not call the OCR service or object store directly. See [`docs/architecture.md`](docs/architecture.md) for request, security, storage, and consistency flows.
+The Next.js client calls one public business API: Spring Boot. Spring owns authentication, authorization, workflow transitions, PostgreSQL transactions, caching, and document access; it alone calls the internal FastAPI OCR service. This boundary prevents browsers from bypassing business rules or receiving database, object-store, or OCR-service credentials.
 
-## Tech Stack
+PostgreSQL is the durable source of truth. Redis contains only recoverable, scoped dashboard cache entries, while MinIO supplies private S3-compatible storage locally and AWS S3 is the production target. See the [architecture document](docs/architecture.md) for the full trust, file, and consistency model.
+
+### Request lifecycle
+
+1. An Employee uploads an invoice through Spring Boot; the validated file is stored under a non-guessable object key.
+2. Spring invokes FastAPI in the background, where Tesseract performs OCR and deterministic parsing extracts vendor, date, total, and line items.
+3. Complete, consistent data moves to `manager_review`; flagged data returns to `employee_review` for correction.
+4. The assigned Manager approves or rejects. Approved requests move to `finance_review`.
+5. Finance records `paid` or `scheduled`; every material transition appends an immutable audit event.
+
+## 🧰 Tech stack
 
 | Layer | Technologies |
 | --- | --- |
-| Frontend | Next.js, React, TypeScript, Tailwind CSS |
-| Business API | Java 17, Spring Boot, Spring Security, JDBC, Flyway |
-| OCR service | Python 3.11, FastAPI, Tesseract, Pillow, pypdfium2 |
-| Data | PostgreSQL, Redis, MinIO locally, S3-compatible object storage |
-| Delivery and testing | Docker Compose, GitHub Actions, Maven, Testcontainers, pytest, Vitest, Playwright |
+| Frontend | Next.js 16.3.5, React 19, TypeScript, Tailwind CSS, shadcn/ui patterns, Lucide icons |
+| Business API | Java 17, Spring Boot 3.5.4, Spring Security, JDBC, Flyway, JWT |
+| OCR service | Python 3.11, FastAPI, Tesseract via pytesseract, Pillow, pypdfium2 |
+| Data | PostgreSQL 17, Redis 7, MinIO locally, private AWS S3 in production |
+| Delivery and QA | Docker, Docker Compose, GitHub Actions, Maven, Testcontainers, Vitest, Playwright, pytest, Ruff |
+
+## 🛡️ Security and reliability
+
+| Concern | Implemented decision | Why it matters |
+| --- | --- | --- |
+| Authentication | HS256 JWT delivered in a Secure, HttpOnly, SameSite cookie | Browser JavaScript cannot read the session token |
+| Authorization | Deny-by-default role, ownership, assignment, and workflow-state checks | Hiding a UI control is never treated as access control |
+| CSRF | HMAC-signed, subject-bound double-submit token on mutations | Automatically attached cookies alone cannot authorize forged actions |
+| Documents | Private storage, file-signature validation, non-guessable keys, and 60-second access links | Files and storage credentials remain outside the client trust boundary |
+| Consistency | PostgreSQL transactions and optimistic version checks | Concurrent approvals and payments cannot silently overwrite each other |
+| Auditability | Append-only events and a database role without update/delete privileges | Current state cannot erase historical workflow evidence |
+| OCR failure | Bounded internal call, persisted failure state, and explicit retry | A slow or failed extraction cannot duplicate the upload or corrupt workflow state |
 
 ## Getting Started
 
