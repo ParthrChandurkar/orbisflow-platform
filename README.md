@@ -12,7 +12,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![CI](https://github.com/ParthrChandurkar/orbisflow-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/ParthrChandurkar/orbisflow-platform/actions/workflows/ci.yml)
 
-[Features](#-role-based-workflow) · [Architecture](#-architecture) · [Run locally](#-run-locally) · [Testing](#-testing) · [Documentation](#-design-documentation)
+[Features](#features) · [Architecture](#architecture) · [Run locally](#run-locally) · [Testing](#testing) · [Documentation](#documentation)
 
 </div>
 
@@ -34,6 +34,8 @@ Orbis Flow replaces invoice handoffs scattered across email and spreadsheets wit
 | Local runtime | Complete workflow runs through Docker Compose, including private object storage |
 | Production | AWS deployment is pending; the repository does not claim a live deployment |
 | AI scope | Real Tesseract OCR with deterministic field extraction—not an LLM or hardcoded response |
+
+<a id="features"></a>
 
 ## ✨ Role-based workflow
 
@@ -57,6 +59,8 @@ Orbis Flow replaces invoice handoffs scattered across email and spreadsheets wit
 - Mark eligible invoices as `paid` or `scheduled`.
 - View processed requests, payment details, documents, and audit history.
 - Process any eligible Finance-stage request without a per-request Finance assignment.
+
+<a id="architecture"></a>
 
 ## 🏗️ Architecture
 
@@ -95,6 +99,8 @@ PostgreSQL is the durable source of truth. Redis contains only recoverable, scop
 | Consistency | PostgreSQL transactions and optimistic version checks | Concurrent approvals and payments cannot silently overwrite each other |
 | Auditability | Append-only events and a database role without update/delete privileges | Current state cannot erase historical workflow evidence |
 | OCR failure | Bounded internal call, persisted failure state, and explicit retry | A slow or failed extraction cannot duplicate the upload or corrupt workflow state |
+
+<a id="run-locally"></a>
 
 ## 🚀 Run locally
 
@@ -151,6 +157,8 @@ Use `docker compose down -v` only when you intentionally want to delete all loca
 
 The root [`.env.example`](.env.example) documents database, JWT, CSRF, service-port, Redis, and S3-compatible storage settings. A production deployment replaces the MinIO endpoint and development credentials with a private AWS S3 bucket and environment-provided secrets; application code does not change.
 
+<a id="testing"></a>
+
 ## 🧪 Testing
 
 Run each suite from the repository root after installing its toolchain dependencies:
@@ -179,11 +187,72 @@ npm run test:e2e
 
 The backend suite uses real PostgreSQL through Testcontainers and launches the OCR-service image for extraction paths. GitHub Actions independently verifies the frontend, backend, and AI service on pushes and pull requests to `main`.
 
-## Project Status and Limitations
+## 🖼️ Product tour
 
-- Docker Compose provides the verified local workflow, including MinIO-based object storage.
-- AWS-oriented S3 configuration is present, but this repository does not contain infrastructure-as-code for a complete AWS deployment.
-- OCR output requires user review and correction.
-- Local development credentials are fixtures, not production secrets.
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <strong>Employee dashboard</strong><br><br>
+      <img src="docs/evidence/stage-21/02-employee-populated.png" alt="Employee dashboard showing populated invoice requests">
+    </td>
+    <td width="50%" align="center">
+      <strong>Invoice detail and audit history</strong><br><br>
+      <img src="docs/evidence/stage-21/03-request-detail.png" alt="Request detail showing extracted invoice data and audit history">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <strong>Manager approval queue</strong><br><br>
+      <img src="docs/evidence/stage-21/04-manager-queue.png" alt="Manager approval queue and team activity">
+    </td>
+    <td width="50%" align="center">
+      <strong>Finance processing queue</strong><br><br>
+      <img src="docs/evidence/stage-21/05-finance-queue.png" alt="Finance processing queue">
+    </td>
+  </tr>
+</table>
 
+<a id="documentation"></a>
 
+## 📚 Design documentation
+
+The repository preserves the full design trail, not only the final code:
+
+- [Product requirements](docs/PRD.md)
+- [System architecture](docs/architecture.md)
+- [RBAC permission and negative-case matrix](docs/rbac.md)
+- [User stories and requirement traceability](docs/user-stories.md)
+- [Database schema and state-machine rules](docs/db-schema.md)
+- [Backend API contract](docs/backend-api.md)
+- [Frontend routes and data-flow design](docs/frontend.md)
+- [Repository structure](docs/folder-structure.md)
+
+### Repository map
+
+```text
+orbisflow-platform/
+├── frontend/              Next.js App Router UI, Vitest, and Playwright
+├── backend/               Feature-first Spring Boot API, Flyway, and integration tests
+├── ai-service/            FastAPI OCR/extraction engine and pytest suite
+├── docs/                  Product, architecture, RBAC, schema, API, and UX evidence
+├── .github/workflows/     Independent frontend, backend, and AI CI jobs
+└── docker-compose.yml     Complete local stack with PostgreSQL, Redis, and MinIO
+```
+
+For a fast technical review, begin with the [PRD](docs/PRD.md), inspect the [architecture](docs/architecture.md) and [RBAC model](docs/rbac.md), then trace an endpoint from the [API contract](docs/backend-api.md) into its feature-first backend module and integration test.
+
+## 🗺️ Scope and roadmap
+
+The MVP deliberately uses three fixed roles and one fixed workflow. OCR assists data entry, but a human remains responsible for approval and payment decisions.
+
+- Deploy the existing containers and managed data services to AWS.
+- Add infrastructure-as-code and production observability around the current architecture.
+- Re-evaluate deferred capabilities only after MVP validation: enterprise SSO, configurable workflows, real-time notifications, and natural-language retrieval.
+
+## 📄 License
+
+No open-source license is currently included. The repository is available for portfolio review; all rights are reserved unless a license is added later.
+
+## 👤 Author
+
+**Parth Chandurkar** · [GitHub](https://github.com/ParthrChandurkar)
